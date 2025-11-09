@@ -37,7 +37,7 @@ export const adaptOrderFromJson = (orderJson: OrderJson): Order => {
       id: product.productId,
       name: product.name,
       price: product.price,
-      quantity: product.quantity,
+      quantity: typeof product.quantity === 'string' ? parseInt(product.quantity) : product.quantity,
     })),
     createdAt,
   };

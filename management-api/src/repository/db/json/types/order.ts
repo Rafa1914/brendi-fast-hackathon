@@ -23,7 +23,7 @@ export interface OrderProductJson {
   name: string;
   description: string;
   price: number;
-  quantity: number;
+  quantity: number | string;
   notes: string;
   isPizza: boolean;
   picture: string;

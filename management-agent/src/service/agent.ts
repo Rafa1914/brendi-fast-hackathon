@@ -1,6 +1,7 @@
 import agentProvider from '../ai/agentProvider';
 import { ChatRequest, ChatResponse, InsightsRequest, InsightsResponse } from '../types/agent';
 import { AnalyticsResponse } from '../types/analytics';
+import { logger } from '../utils/logger';
 
 const SYSTEM_PROMPT_CHAT = `Você é um assistente especializado em análise de dados de loja. 
 Você ajuda a interpretar métricas, identificar tendências e fornecer insights sobre o desempenho da loja.
@@ -115,7 +116,10 @@ Lembre-se: retorne APENAS o JSON válido, sem texto adicional.`;
     };
   } catch (error) {
     // Fallback: se não conseguir fazer parse, retorna estrutura básica
-    console.error('Erro ao fazer parse dos insights:', error);
+    logger.error('Erro ao fazer parse dos insights', error, {
+      context: 'AgentService',
+      metadata: { responseLength: response.text.length },
+    });
     return {
       summary: response.text.substring(0, 200) + '...',
       highlights: [],

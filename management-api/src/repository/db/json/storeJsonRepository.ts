@@ -1,21 +1,10 @@
-import { IStoreRepository } from "../interface/IStoreRepository";
-import { Store } from "../../types/store";
+import { IStoreRepository } from "../../interface/IStoreRepository";
+import { Store } from "../../../types/store";
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { adaptStoreFromJson, StoreJson } from "./adapters/store";
 
-interface StoreJson {
-  brand: {
-    id: string;
-    name: string;
-  };
-}
 
-const adaptStoreFromJson = (storeJson: StoreJson): Store => {
-  return {
-    id: storeJson.brand.id,
-    name: storeJson.brand.name
-  };
-};
 
 export const StoreJsonRepository: IStoreRepository = {
   getStore: async (id: string): Promise<Store> => {

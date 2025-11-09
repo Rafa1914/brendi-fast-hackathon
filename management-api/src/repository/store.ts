@@ -1,5 +1,5 @@
 
-import { StoreJsonRepository } from "./db/storeJsonRepository";
+import { StoreJsonRepository } from "./db/json/storeJsonRepository";
 import { IStoreRepository } from "./interface/IStoreRepository";
 
 const StoreRepository: IStoreRepository = StoreJsonRepository;

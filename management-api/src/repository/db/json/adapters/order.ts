@@ -46,5 +46,7 @@ export const adaptOrderFromJson = (orderJson: OrderJson): Order => {
       timeToTransit: orderJson.elapsedTimes.timeToTransit,
       timeToDelivered: orderJson.elapsedTimes.timeToDelivered,
     } : undefined,
+    neighborhood: orderJson.delivery?.address?.neighborhood || orderJson.delivery?.address?.geocoderNeighborhood || undefined,
+    status: orderJson.status,
   };
 };

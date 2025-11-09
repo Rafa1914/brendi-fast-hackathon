@@ -25,6 +25,7 @@ async function getAnalytics(
   const recentOrders = AnalyticsUtils.getRecentOrders(orders);
   const periodInfo = AnalyticsUtils.getPeriodInfo(orders);
   const preparationTimeStats = AnalyticsUtils.calculatePreparationTimeStats(orders);
+  const neighborhoodDistribution = AnalyticsUtils.calculateNeighborhoodDistribution(orders);
 
   return {
     stats,
@@ -37,6 +38,7 @@ async function getAnalytics(
     recentOrders,
     periodInfo,
     preparationTimeStats,
+    neighborhoodDistribution,
   };
 }
 

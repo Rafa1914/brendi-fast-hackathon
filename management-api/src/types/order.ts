@@ -13,6 +13,8 @@ export interface Order {
   products: OrderProduct[];
   createdAt: Date;
   elapsedTimes?: OrderElapsedTimes;
+  neighborhood?: string;
+  status?: string;
 }
 
 export interface OrderProduct {

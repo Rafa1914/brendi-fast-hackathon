@@ -70,8 +70,9 @@
 
       <!-- Gráficos e Análises -->
       <div class="dashboard__main-content">
-        <!-- Gráfico de Pedidos com Toggle Dia/Semana -->
-        <div class="dashboard__charts-row">
+        <!-- Primeira Linha: Pedidos por Dia + Top 5 Produtos -->
+        <div class="dashboard__charts-row dashboard__charts-row--split">
+          <!-- Gráfico de Pedidos com Toggle Dia/Semana -->
           <BaseCard>
             <div class="dashboard__chart-header">
               <h3 class="dashboard__chart-title">Pedidos por {{ chartView === 'day' ? 'Dia' : 'Semana' }}</h3>
@@ -99,10 +100,8 @@
               <BaseSkeleton v-else-if="analyticsStore.loading" width="100%" height="300px" />
             </div>
           </BaseCard>
-        </div>
 
-        <!-- Gráficos de Pizza -->
-        <div class="dashboard__pie-charts-row">
+          <!-- Top 5 Produtos -->
           <BasePieChart
             v-if="!analyticsStore.loading && topProductsPieChartData"
             title="Top 5 Produtos - % de Receita"
@@ -112,7 +111,11 @@
             <BaseSkeleton width="50%" height="1.25rem" style="margin-bottom: 1.5rem;" />
             <BaseSkeleton width="300px" height="300px" variant="circular" style="margin: 0 auto;" />
           </BaseCard>
+        </div>
 
+        <!-- Segunda Linha: Distribuição por Tipo + Distribuição por Bairro -->
+        <div class="dashboard__charts-row dashboard__charts-row--split">
+          <!-- Distribuição de Pedidos por Tipo -->
           <BasePieChart
             v-if="!analyticsStore.loading && orderTypePieChartData"
             title="Distribuição de Pedidos por Tipo"
@@ -121,6 +124,18 @@
           <BaseCard v-else-if="analyticsStore.loading" class="dashboard__chart-skeleton">
             <BaseSkeleton width="50%" height="1.25rem" style="margin-bottom: 1.5rem;" />
             <BaseSkeleton width="300px" height="300px" variant="circular" style="margin: 0 auto;" />
+          </BaseCard>
+
+          <!-- Gráfico de Distribuição por Bairro -->
+          <BaseBarChart
+            v-if="!analyticsStore.loading && neighborhoodBarChartData"
+            title="Distribuição de Pedidos Entregues por Bairro"
+            :data="neighborhoodBarChartData"
+            :options="neighborhoodChartOptions"
+          />
+          <BaseCard v-else-if="analyticsStore.loading" class="dashboard__chart-skeleton">
+            <BaseSkeleton width="50%" height="1.25rem" style="margin-bottom: 1.5rem;" />
+            <BaseSkeleton width="100%" height="300px" />
           </BaseCard>
         </div>
       </div>
@@ -269,6 +284,7 @@ ChartJS.register(
   Legend
 )
 import BasePieChart from '@/components/design-system/BasePieChart.vue'
+import BaseBarChart from '@/components/design-system/BaseBarChart.vue'
 import BaseSkeleton from '@/components/design-system/BaseSkeleton.vue'
 import PeriodIndicator from '@/components/analytics/PeriodIndicator.vue'
 import DateFilters from '@/components/filters/DateFilters.vue'
@@ -278,6 +294,7 @@ import { useOrdersByDayChart } from '@/composables/useOrdersByDayChart'
 import { useOrdersByWeekChart } from '@/composables/useOrdersByWeekChart'
 import { useTopProductsPieChart } from '@/composables/useTopProductsPieChart'
 import { useOrderTypePieChart } from '@/composables/useOrderTypePieChart'
+import { useNeighborhoodBarChart } from '@/composables/useNeighborhoodBarChart'
 import type { AnalyticsFilters } from '@/types/analytics'
 import type { ChartOptions, ChartData } from 'chart.js'
 
@@ -290,11 +307,13 @@ const ordersByDay = computed(() => analyticsStore.analytics?.ordersByDay || [])
 const ordersByWeek = computed(() => analyticsStore.analytics?.ordersByWeek || [])
 const topProducts = computed(() => analyticsStore.analytics?.topProducts)
 const orderTypeDistribution = computed(() => analyticsStore.analytics?.orderTypeDistribution)
+const neighborhoodDistribution = computed(() => analyticsStore.analytics?.neighborhoodDistribution)
 
 const { chartData: ordersByDayChartData } = useOrdersByDayChart(ordersByDay)
 const { chartData: ordersByWeekChartData } = useOrdersByWeekChart(ordersByWeek)
 const { chartData: topProductsPieChartData } = useTopProductsPieChart(topProducts)
 const { chartData: orderTypePieChartData } = useOrderTypePieChart(orderTypeDistribution)
+const { chartData: neighborhoodBarChartData } = useNeighborhoodBarChart(neighborhoodDistribution)
 
 const currentChartData = computed<ChartData<'line'> | null>(() => {
   if (chartView.value === 'day') {
@@ -359,6 +378,51 @@ const lineChartOptions: ChartOptions<'line'> = {
   }
 }
 
+const neighborhoodChartOptions: ChartOptions<'bar'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: {
+    mode: 'index' as const,
+    intersect: false
+  },
+  plugins: {
+    legend: {
+      display: false
+    },
+    tooltip: {
+      callbacks: {
+        label: (context: any) => {
+          const value = context.parsed.y
+          const neighborhood = neighborhoodDistribution.value?.[context.dataIndex]
+          if (neighborhood) {
+            return [
+              `Pedidos: ${value}`,
+              `Receita: ${formatCurrency(neighborhood.revenue / 100)}`,
+              `Percentual: ${neighborhood.percentage.toFixed(1)}%`
+            ]
+          }
+          return `Pedidos: ${value}`
+        }
+      }
+    }
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      title: {
+        display: true,
+        text: 'Quantidade de Pedidos Entregues'
+      }
+    },
+    x: {
+      ticks: {
+        maxRotation: 45,
+        minRotation: 45
+      }
+    }
+  }
+}
+
 const handleFiltersUpdate = async (filters: AnalyticsFilters) => {
   await analyticsStore.fetchAnalytics(filters)
 }
@@ -400,6 +464,16 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.5rem;
+}
+
+.dashboard__charts-row--split {
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 1024px) {
+  .dashboard__charts-row--split {
+    grid-template-columns: 1fr;
+  }
 }
 
 .dashboard__chart-header {

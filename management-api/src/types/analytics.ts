@@ -62,6 +62,13 @@ export interface PreparationTimeStats {
   ordersWithoutData: number;
 }
 
+export interface NeighborhoodDistribution {
+  neighborhood: string;
+  count: number;
+  revenue: number;
+  percentage: number;
+}
+
 export interface AnalyticsResponse {
   stats: OrderStats;
   ordersByDay: OrdersByDay[];
@@ -77,6 +84,7 @@ export interface AnalyticsResponse {
     totalOrders: number;
   };
   preparationTimeStats?: PreparationTimeStats;
+  neighborhoodDistribution: NeighborhoodDistribution[];
 }
 
 export interface AnalyticsFilters {

@@ -8,6 +8,7 @@ import {
   OrderTypeDistribution,
   LoyalCustomer,
   PreparationTimeStats,
+  NeighborhoodDistribution,
 } from "../types/analytics";
 
 function getWeekLabel(date: Date): string {
@@ -354,6 +355,44 @@ function calculatePreparationTimeStats(orders: Order[]): PreparationTimeStats | 
   };
 }
 
+function calculateNeighborhoodDistribution(orders: Order[]): NeighborhoodDistribution[] {
+  // Filtrar apenas pedidos entregues (status === 'delivered')
+  const deliveredOrders = orders.filter(
+    (order) => order.status === 'delivered' && order.neighborhood
+  );
+
+  if (deliveredOrders.length === 0) {
+    return [];
+  }
+
+  const neighborhoodMap = new Map<
+    string,
+    { count: number; revenue: number }
+  >();
+
+  deliveredOrders.forEach((order) => {
+    const neighborhood = order.neighborhood!;
+    const existing = neighborhoodMap.get(neighborhood) || {
+      count: 0,
+      revenue: 0,
+    };
+    existing.count++;
+    existing.revenue += order.totalPrice;
+    neighborhoodMap.set(neighborhood, existing);
+  });
+
+  const totalOrders = deliveredOrders.length;
+
+  return Array.from(neighborhoodMap.entries())
+    .map(([neighborhood, data]) => ({
+      neighborhood,
+      count: data.count,
+      revenue: data.revenue,
+      percentage: totalOrders > 0 ? (data.count / totalOrders) * 100 : 0,
+    }))
+    .sort((a, b) => b.count - a.count);
+}
+
 export const AnalyticsUtils = {
   getWeekLabel,
   calculateStats,
@@ -366,5 +405,6 @@ export const AnalyticsUtils = {
   calculateOrderTypeDistribution,
   analyzeLoyalCustomers,
   calculatePreparationTimeStats,
+  calculateNeighborhoodDistribution,
 };
 

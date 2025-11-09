@@ -5,14 +5,16 @@
         v-for="preset in presets"
         :key="preset.id"
         class="date-filters__preset"
-        :class="{ 'date-filters__preset--active': selectedPreset === preset.id }"
+        :class="{ 'date-filters__preset--active': selectedPreset === preset.id, 'date-filters__preset--disabled': disabled }"
+        :disabled="disabled"
         @click="applyPreset(preset)"
       >
         {{ preset.label }}
       </button>
       <button
         class="date-filters__preset date-filters__preset--custom"
-        :class="{ 'date-filters__preset--active': showCustomRange }"
+        :class="{ 'date-filters__preset--active': showCustomRange, 'date-filters__preset--disabled': disabled }"
+        :disabled="disabled"
         @click="toggleCustomRange"
       >
         Personalizado
@@ -29,6 +31,7 @@
             v-model="localStartDate"
             type="date"
             class="date-filters__input"
+            :disabled="disabled"
           />
         </div>
         <div class="date-filters__group">
@@ -37,13 +40,14 @@
             v-model="localEndDate"
             type="date"
             class="date-filters__input"
+            :disabled="disabled"
           />
         </div>
         <div class="date-filters__actions">
-          <BaseButton variant="ghost" @click="clearFilters">
+          <BaseButton variant="ghost" :disabled="disabled" @click="clearFilters">
             Limpar
           </BaseButton>
-          <BaseButton @click="applyCustomFilters">
+          <BaseButton :disabled="disabled" @click="applyCustomFilters">
             Filtrar
           </BaseButton>
         </div>
@@ -59,6 +63,7 @@ import type { AnalyticsFilters } from '@/types/analytics'
 
 const props = defineProps<{
   filters?: AnalyticsFilters
+  disabled?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -250,9 +255,19 @@ watch(() => props.filters, (newFilters) => {
   gap: 0.5rem;
 }
 
-.date-filters__preset:hover {
+.date-filters__preset:hover:not(:disabled) {
   border-color: var(--color-primary);
   background: var(--color-background);
+}
+
+.date-filters__preset--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.date-filters__preset--disabled:hover {
+  border-color: var(--color-border);
+  background: var(--color-surface);
 }
 
 .date-filters__preset--active {

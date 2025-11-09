@@ -1,4 +1,4 @@
-import type { Order } from './order';
+import type { Order, OrderType } from './order';
 
 export interface OrderStats {
   totalRevenue: number;
@@ -25,6 +25,7 @@ export interface ProductAnalysis {
   name: string;
   totalQuantity: number;
   totalRevenue: number;
+  revenuePercentage?: number;
 }
 
 export interface PeriodDistribution {
@@ -33,12 +34,32 @@ export interface PeriodDistribution {
   revenue: number;
 }
 
+export interface OrderTypeDistribution {
+  type: OrderType;
+  label: string;
+  count: number;
+  revenue: number;
+  percentage: number;
+}
+
+export interface LoyalCustomer {
+  customer: {
+    name: string;
+    phone: string;
+  };
+  totalOrders: number;
+  totalRevenue: number;
+  averageTicket: number;
+}
+
 export interface AnalyticsResponse {
   stats: OrderStats;
   ordersByDay: OrdersByDay[];
   ordersByWeek: OrdersByWeek[];
   topProducts: ProductAnalysis[];
   periodDistribution: PeriodDistribution[];
+  orderTypeDistribution: OrderTypeDistribution[];
+  loyalCustomers: LoyalCustomer[];
   recentOrders: Order[];
   periodInfo: {
     startDate: string;

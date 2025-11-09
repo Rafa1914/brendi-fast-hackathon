@@ -1,5 +1,5 @@
 import OrderRepository from "../repository/order";
-import { Order, OrderFilters } from "../types/order";
+import { Order, OrderFilters, OrderType } from "../types/order";
 import {
   AnalyticsResponse,
   AnalyticsFilters,
@@ -8,6 +8,8 @@ import {
   OrdersByWeek,
   ProductAnalysis,
   PeriodDistribution,
+  OrderTypeDistribution,
+  LoyalCustomer,
 } from "../types/analytics";
 
 function getWeekLabel(date: Date): string {
@@ -148,9 +150,15 @@ function analyzeProducts(orders: Order[]): ProductAnalysis[] {
     });
   });
 
+  const totalRevenue = orders.reduce((sum, order) => sum + order.totalPrice, 0);
+  
   return Array.from(productMap.values())
     .sort((a, b) => b.totalRevenue - a.totalRevenue)
-    .slice(0, 10);
+    .slice(0, 5)
+    .map((product) => ({
+      ...product,
+      revenuePercentage: totalRevenue > 0 ? (product.totalRevenue / totalRevenue) * 100 : 0,
+    }));
 }
 
 function calculatePeriodDistribution(orders: Order[]): PeriodDistribution[] {
@@ -231,6 +239,84 @@ function getPeriodInfo(orders: Order[]): {
   };
 }
 
+function calculateOrderTypeDistribution(orders: Order[]): OrderTypeDistribution[] {
+  const typeMap = new Map<
+    OrderType,
+    { count: number; revenue: number }
+  >();
+
+  orders.forEach((order) => {
+    const existing = typeMap.get(order.type) || {
+      count: 0,
+      revenue: 0,
+    };
+    existing.count++;
+    existing.revenue += order.totalPrice;
+    typeMap.set(order.type, existing);
+  });
+
+  const totalOrders = orders.length;
+
+  const typeLabels: Record<OrderType, string> = {
+    [OrderType.DELIVERY]: "Delivery",
+    [OrderType.PICKUP]: "Retirada",
+    [OrderType.OTHER]: "Outro",
+  };
+
+  return Array.from(typeMap.entries()).map(([type, data]) => ({
+    type,
+    label: typeLabels[type],
+    count: data.count,
+    revenue: data.revenue,
+    percentage: totalOrders > 0 ? (data.count / totalOrders) * 100 : 0,
+  }));
+}
+
+function analyzeLoyalCustomers(orders: Order[]): LoyalCustomer[] {
+  const customerMap = new Map<
+    string,
+    {
+      customer: { name: string; phone: string };
+      orders: number[];
+      totalRevenue: number;
+    }
+  >();
+
+  orders.forEach((order) => {
+    const customerKey = `${order.customer.phone}`;
+    const existing = customerMap.get(customerKey) || {
+      customer: {
+        name: order.customer.name,
+        phone: order.customer.phone,
+      },
+      orders: [],
+      totalRevenue: 0,
+    };
+
+    existing.orders.push(order.totalPrice);
+    existing.totalRevenue += order.totalPrice;
+    customerMap.set(customerKey, existing);
+  });
+
+  return Array.from(customerMap.values())
+    .map((data) => ({
+      customer: data.customer,
+      totalOrders: data.orders.length,
+      totalRevenue: data.totalRevenue,
+      averageTicket: data.orders.length > 0
+        ? data.totalRevenue / data.orders.length
+        : 0,
+    }))
+    .sort((a, b) => {
+      // Ordenar por total de pedidos primeiro, depois por receita total
+      if (b.totalOrders !== a.totalOrders) {
+        return b.totalOrders - a.totalOrders;
+      }
+      return b.totalRevenue - a.totalRevenue;
+    })
+    .slice(0, 10);
+}
+
 async function getAnalytics(
   filters: AnalyticsFilters
 ): Promise<AnalyticsResponse> {
@@ -245,6 +331,8 @@ async function getAnalytics(
   const ordersByWeek = groupOrdersByWeek(orders);
   const topProducts = analyzeProducts(orders);
   const periodDistribution = calculatePeriodDistribution(orders);
+  const orderTypeDistribution = calculateOrderTypeDistribution(orders);
+  const loyalCustomers = analyzeLoyalCustomers(orders);
   const recentOrders = getRecentOrders(orders);
   const periodInfo = getPeriodInfo(orders);
 
@@ -254,6 +342,8 @@ async function getAnalytics(
     ordersByWeek,
     topProducts,
     periodDistribution,
+    orderTypeDistribution,
+    loyalCustomers,
     recentOrders,
     periodInfo,
   };

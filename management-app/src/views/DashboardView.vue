@@ -327,8 +327,8 @@ const feedbackStore = useFeedbackStore()
 const activeTab = ref('dashboard')
 
 const tabs = [
-  { id: 'dashboard', label: 'Dashboard' },
-  { id: 'customers', label: 'Clientes' }
+  { id: 'dashboard', label: 'Geral' },
+  { id: 'customers', label: 'Feedbacks' }
 ]
 
 const chartView = ref<'day' | 'week'>('day')

@@ -1,7 +1,8 @@
 import { chat as deliveryConsultantChat } from '../ai/agents/DeliveryConsultantAgent';
-import { generateInsights as insightsSummarizerGenerateInsights } from '../ai/agents/InsightsSummarizerAgent/InsightsSummarizerAgent';
+import InsightsSummarizerAgent from '../ai/agents/InsightsSummarizerAgent';
 import managementApiClient from '../client/managementApiClient';
 import { ChatRequest, ChatResponse, InsightsRequest, InsightsResponse } from '../types/agent';
+import InsightsSummarizerUtils from '../utils/insightsSummarizer';
 import { logger } from '../utils/logger';
 
 async function chat(request: ChatRequest): Promise<ChatResponse> {
@@ -66,11 +67,9 @@ async function generateInsights(request: InsightsRequest): Promise<InsightsRespo
       : undefined;
 
     // Usa o InsightsSummarizerAgent (sem tools, mais rápido)
-    const responseText = await insightsSummarizerGenerateInsights(
-      analytics,
-      feedbackAnalytics,
-      period
-    );
+    const responseText = await InsightsSummarizerAgent.generate({
+      prompt: InsightsSummarizerUtils.buildUserPrompt(period, analytics, feedbackAnalytics),
+    });
     
     // Função robusta para extrair e limpar JSON
     const extractAndParseJSON = (text: string): any => {
@@ -154,7 +153,7 @@ async function generateInsights(request: InsightsRequest): Promise<InsightsRespo
       }
     };
     
-    const parsed = extractAndParseJSON(responseText);
+    const parsed = extractAndParseJSON(responseText.text);
     
     // Valida e estrutura a resposta
     return {

@@ -70,27 +70,34 @@
 
       <!-- Gráficos e Análises -->
       <div class="dashboard__main-content">
-        <!-- Gráficos de Linha e Barra -->
+        <!-- Gráfico de Pedidos com Toggle Dia/Semana -->
         <div class="dashboard__charts-row">
-          <BaseLineChart
-            v-if="!analyticsStore.loading && ordersByDayChartData"
-            title="Pedidos por Dia"
-            :data="ordersByDayChartData"
-            :options="lineChartOptions"
-          />
-          <BaseCard v-else-if="analyticsStore.loading" class="dashboard__chart-skeleton">
-            <BaseSkeleton width="40%" height="1.25rem" style="margin-bottom: 1.5rem;" />
-            <BaseSkeleton width="100%" height="300px" />
-          </BaseCard>
-
-          <BaseBarChart
-            v-if="!analyticsStore.loading && ordersByWeekChartData"
-            title="Pedidos por Semana"
-            :data="ordersByWeekChartData"
-          />
-          <BaseCard v-else-if="analyticsStore.loading" class="dashboard__chart-skeleton">
-            <BaseSkeleton width="40%" height="1.25rem" style="margin-bottom: 1.5rem;" />
-            <BaseSkeleton width="100%" height="300px" />
+          <BaseCard>
+            <div class="dashboard__chart-header">
+              <h3 class="dashboard__chart-title">Pedidos por {{ chartView === 'day' ? 'Dia' : 'Semana' }}</h3>
+              <div class="dashboard__chart-toggle">
+                <button
+                  :class="['dashboard__toggle-button', { 'dashboard__toggle-button--active': chartView === 'day' }]"
+                  @click="chartView = 'day'"
+                >
+                  Dia
+                </button>
+                <button
+                  :class="['dashboard__toggle-button', { 'dashboard__toggle-button--active': chartView === 'week' }]"
+                  @click="chartView = 'week'"
+                >
+                  Semana
+                </button>
+              </div>
+            </div>
+            <div class="dashboard__chart-wrapper">
+              <Line
+                v-if="!analyticsStore.loading && currentChartData"
+                :data="currentChartData"
+                :options="lineChartOptions"
+              />
+              <BaseSkeleton v-else-if="analyticsStore.loading" width="100%" height="300px" />
+            </div>
           </BaseCard>
         </div>
 
@@ -118,72 +125,9 @@
         </div>
       </div>
 
-      <!-- Análise de Produtos e Distribuição -->
-      <div class="dashboard__content-row">
-        <BaseCard>
-          <h3 class="dashboard__section-title">Top 5 Produtos</h3>
-          <div v-if="analyticsStore.loading" class="dashboard__loading-content">
-            <div v-for="i in 5" :key="i" class="dashboard__skeleton-item">
-              <BaseSkeleton width="60%" height="1rem" />
-              <BaseSkeleton width="30%" height="0.875rem" style="margin-top: 0.5rem;" />
-              <BaseSkeleton width="25%" height="1.125rem" style="margin-top: 0.5rem; margin-left: auto;" />
-            </div>
-          </div>
-          <div v-else-if="!analyticsStore.analytics || analyticsStore.analytics.topProducts.length === 0" class="dashboard__empty">
-            <p>Nenhum dado disponível para análise</p>
-          </div>
-          <div v-else class="dashboard__products">
-            <div
-              v-for="product in analyticsStore.analytics.topProducts"
-              :key="product.id"
-              class="dashboard__product-item"
-            >
-              <div class="dashboard__product-info">
-                <span class="dashboard__product-name">{{ product.name }}</span>
-                <span class="dashboard__product-quantity">
-                  {{ product.totalQuantity }} vendidos
-                  <span v-if="product.revenuePercentage" class="dashboard__product-percentage">
-                    • {{ product.revenuePercentage.toFixed(1) }}% da receita
-                  </span>
-                </span>
-              </div>
-              <div class="dashboard__product-revenue">
-                {{ formatCurrency(product.totalRevenue / 100) }}
-              </div>
-            </div>
-          </div>
-        </BaseCard>
 
-        <!-- Distribuição por Período -->
-        <BaseCard>
-          <h3 class="dashboard__section-title">Distribuição por Período</h3>
-          <div v-if="analyticsStore.loading" class="dashboard__loading-content">
-            <div v-for="i in 4" :key="i" class="dashboard__skeleton-item">
-              <BaseSkeleton width="50%" height="1rem" />
-              <BaseSkeleton width="30%" height="0.875rem" style="margin-top: 0.5rem;" />
-              <BaseSkeleton width="35%" height="1.25rem" style="margin-top: 0.5rem; margin-left: auto;" />
-            </div>
-          </div>
-          <div v-else class="dashboard__periods">
-            <div
-              v-for="period in analyticsStore.analytics?.periodDistribution || []"
-              :key="period.label"
-              class="dashboard__period-item"
-            >
-              <div class="dashboard__period-header">
-                <span class="dashboard__period-label">{{ period.label }}</span>
-                <span class="dashboard__period-count">{{ period.count }} pedidos</span>
-              </div>
-              <div class="dashboard__period-revenue">
-                {{ formatCurrency(period.revenue / 100) }}
-              </div>
-            </div>
-          </div>
-        </BaseCard>
-      </div>
-
-      <!-- Tempos de Preparação -->
-      <div class="dashboard__content-row">
+      <!-- Tempos de Preparação e Clientes Fiéis -->
+      <div class="dashboard__content-row dashboard__content-row--split">
         <BaseCard>
           <h3 class="dashboard__section-title">Tempos de Preparação</h3>
           <div v-if="analyticsStore.loading" class="dashboard__loading-content">
@@ -197,14 +141,9 @@
             <p>Nenhum dado de tempo de preparação disponível</p>
           </div>
           <div v-else class="dashboard__preparation-times">
-            <div class="dashboard__preparation-info">
-              <span class="dashboard__preparation-label">Pedidos com dados:</span>
-              <span class="dashboard__preparation-value">{{ analyticsStore.analytics.preparationTimeStats.ordersWithData }}</span>
-            </div>
-            <div v-if="analyticsStore.analytics.preparationTimeStats.ordersWithoutData > 0" class="dashboard__preparation-info">
-              <span class="dashboard__preparation-label">Pedidos sem dados:</span>
-              <span class="dashboard__preparation-value">{{ analyticsStore.analytics.preparationTimeStats.ordersWithoutData }}</span>
-            </div>
+            <p class="dashboard__preparation-note">
+              ℹ️ Nem todos os pedidos possuem dados de tempo de preparação disponíveis.
+            </p>
             <div class="dashboard__preparation-times-list">
               <div class="dashboard__preparation-time-item">
                 <div class="dashboard__preparation-time-header">
@@ -249,10 +188,7 @@
             </div>
           </div>
         </BaseCard>
-      </div>
 
-      <!-- Clientes Fiéis e Insights -->
-      <div class="dashboard__content-row dashboard__content-row--with-insights">
         <BaseCard>
           <h3 class="dashboard__section-title">Clientes Mais Fiéis</h3>
           <div v-if="analyticsStore.loading" class="dashboard__loading-content">
@@ -296,44 +232,59 @@
             </div>
           </div>
         </BaseCard>
-
-        <!-- Insights do Período (mais discreto) -->
-        <div class="dashboard__insights-wrapper">
-          <InsightsCard />
-        </div>
       </div>
 
-      <!-- Chat com Agent (flutuante) -->
-      <Chat />
+      <!-- Botão Flutuante de Insights -->
+      <InsightsFloatingButton />
     </div>
   </AppLayout>
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useAnalyticsStore } from '@/stores/analytics'
 import { useStoreStore } from '@/stores/store'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import BaseCard from '@/components/design-system/BaseCard.vue'
 import BaseStatCard from '@/components/design-system/BaseStatCard.vue'
-import BaseBarChart from '@/components/design-system/BaseBarChart.vue'
-import BaseLineChart from '@/components/design-system/BaseLineChart.vue'
+import { Line } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+)
 import BasePieChart from '@/components/design-system/BasePieChart.vue'
 import BaseSkeleton from '@/components/design-system/BaseSkeleton.vue'
 import PeriodIndicator from '@/components/analytics/PeriodIndicator.vue'
 import DateFilters from '@/components/filters/DateFilters.vue'
-import Chat from '@/components/agent/Chat.vue'
-import InsightsCard from '@/components/agent/InsightsCard.vue'
+import InsightsFloatingButton from '@/components/agent/InsightsFloatingButton.vue'
 import { formatCurrency, formatTime } from '@/utils/format'
 import { useOrdersByDayChart } from '@/composables/useOrdersByDayChart'
 import { useOrdersByWeekChart } from '@/composables/useOrdersByWeekChart'
 import { useTopProductsPieChart } from '@/composables/useTopProductsPieChart'
 import { useOrderTypePieChart } from '@/composables/useOrderTypePieChart'
 import type { AnalyticsFilters } from '@/types/analytics'
-import type { ChartOptions } from 'chart.js'
+import type { ChartOptions, ChartData } from 'chart.js'
 
 const analyticsStore = useAnalyticsStore()
 const storeStore = useStoreStore()
+
+const chartView = ref<'day' | 'week'>('day')
 
 const ordersByDay = computed(() => analyticsStore.analytics?.ordersByDay || [])
 const ordersByWeek = computed(() => analyticsStore.analytics?.ordersByWeek || [])
@@ -345,12 +296,48 @@ const { chartData: ordersByWeekChartData } = useOrdersByWeekChart(ordersByWeek)
 const { chartData: topProductsPieChartData } = useTopProductsPieChart(topProducts)
 const { chartData: orderTypePieChartData } = useOrderTypePieChart(orderTypeDistribution)
 
+const currentChartData = computed<ChartData<'line'> | null>(() => {
+  if (chartView.value === 'day') {
+    return ordersByDayChartData.value
+  } else {
+    return ordersByWeekChartData.value
+  }
+})
+
 const lineChartOptions: ChartOptions<'line'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: {
+    mode: 'index' as const,
+    intersect: false
+  },
+  plugins: {
+    legend: {
+      position: 'top' as const
+    },
+    tooltip: {
+      callbacks: {
+        label: (context: any) => {
+          const label = context.dataset.label || ''
+          const value = context.parsed.y
+          
+          if (label.includes('Receita') || label.includes('R$')) {
+            return `${label}: ${formatCurrency(value * 100)}`
+          }
+          if (label.includes('Pedidos') || label.includes('Quantidade')) {
+            return `${label}: ${value} pedidos`
+          }
+          return `${label}: ${value}`
+        }
+      }
+    }
+  },
   scales: {
     y: {
       type: 'linear',
       display: true,
       position: 'left',
+      beginAtZero: true,
       title: {
         display: true,
         text: 'Quantidade de Pedidos'
@@ -360,6 +347,7 @@ const lineChartOptions: ChartOptions<'line'> = {
       type: 'linear',
       display: true,
       position: 'right',
+      beginAtZero: true,
       title: {
         display: true,
         text: 'Receita (R$)'
@@ -410,8 +398,77 @@ onMounted(async () => {
 
 .dashboard__charts-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1.5rem;
+}
+
+.dashboard__chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 0 1rem;
+  padding-top: 1rem;
+}
+
+.dashboard__chart-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+.dashboard__chart-toggle {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+  padding: 0.25rem;
+  border: 1px solid var(--color-border);
+}
+
+.dashboard__toggle-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--color-text-light);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.dashboard__toggle-button:hover {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.dashboard__toggle-button--active {
+  background: var(--color-primary);
+  color: white;
+}
+
+.dashboard__toggle-button--active:hover {
+  background: var(--color-primary-dark);
+}
+
+.dashboard__chart-wrapper {
+  padding: 0 1rem 1rem 1rem;
+  height: 300px;
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard__preparation-note {
+  font-size: 0.875rem;
+  color: var(--color-text-light);
+  margin: 0 0 1rem 0;
+  padding: 0.75rem;
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-warning);
 }
 
 .dashboard__pie-charts-row {
@@ -424,6 +481,16 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 1.5rem;
+}
+
+.dashboard__content-row--split {
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 1024px) {
+  .dashboard__content-row--split {
+    grid-template-columns: 1fr;
+  }
 }
 
 .dashboard__content-row--with-insights {

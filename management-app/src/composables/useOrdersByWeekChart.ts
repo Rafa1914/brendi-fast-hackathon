@@ -7,7 +7,7 @@ export function useOrdersByWeekChart(ordersByWeek: ComputedRef<OrdersByWeek[]> |
     return Array.isArray(ordersByWeek) ? ordersByWeek : ordersByWeek.value
   })
 
-  const chartData = computed<ChartData<'bar'> | null>(() => {
+  const chartData = computed<ChartData<'line'> | null>(() => {
     const data = ordersByWeekValue.value
     if (data.length === 0) return null
 
@@ -21,16 +21,20 @@ export function useOrdersByWeekChart(ordersByWeek: ComputedRef<OrdersByWeek[]> |
         {
           label: 'Quantidade de Pedidos',
           data: counts,
-          backgroundColor: 'rgba(37, 99, 235, 0.6)',
           borderColor: 'rgb(37, 99, 235)',
-          borderWidth: 1
+          backgroundColor: 'rgba(37, 99, 235, 0.1)',
+          tension: 0.4,
+          fill: false,
+          yAxisID: 'y'
         },
         {
           label: 'Receita (R$)',
           data: revenues,
-          backgroundColor: 'rgba(16, 185, 129, 0.6)',
           borderColor: 'rgb(16, 185, 129)',
-          borderWidth: 1
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          tension: 0.4,
+          fill: false,
+          yAxisID: 'y1'
         }
       ]
     }

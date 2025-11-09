@@ -8,7 +8,7 @@ import { adaptStoreFromJson, StoreJson } from "./adapters/store";
 
 export const StoreJsonRepository: IStoreRepository = {
   getStore: async (id: string): Promise<Store> => {
-    const filePath = path.join(__dirname, '../data/store.json');
+    const filePath = path.join(__dirname, '../../data/store.json');
     const fileContent = await fs.readFile(filePath, 'utf8');
     const storeJson = JSON.parse(fileContent) as StoreJson;
     const store = adaptStoreFromJson(storeJson);

@@ -9,7 +9,7 @@ import { OrderUtils } from "./utils/order";
 
 export const OrderJsonRepository: IOrderRepository = {
   listOrders: async (filters: OrderFilters): Promise<Order[]> => {
-    const filePath = path.join(__dirname, '../data/orders.json');
+    const filePath = path.join(__dirname, '../../data/orders.json');
     const fileContent = await fs.readFile(filePath, 'utf8');
     const ordersJson = JSON.parse(fileContent) as OrderJson[];
     const orders = ordersJson.map(adaptOrderFromJson);

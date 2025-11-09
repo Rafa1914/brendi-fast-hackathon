@@ -3,7 +3,6 @@
     <header class="app-layout__header">
       <div class="app-layout__header-left">
         <h1 class="app-layout__logo">🍽️ Dashboard</h1>
-        <h2 class="app-layout__page-title">Dashboard Analítico</h2>
       </div>
       <div class="app-layout__header-actions">
         <ThemeToggle />

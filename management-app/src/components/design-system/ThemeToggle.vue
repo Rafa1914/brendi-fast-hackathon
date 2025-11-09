@@ -3,10 +3,10 @@
     class="theme-toggle"
     :class="`theme-toggle--${theme}`"
     @click="toggleTheme"
-    :aria-label="`Alternar para tema ${theme === 'light' ? 'escuro' : 'claro'}`"
+    :aria-label="`Alternar para tema ${theme === 'dark' ? 'escuro' : 'claro'}`"
   >
-    <span class="theme-toggle__icon">{{ theme === 'light' ? '🌙' : '☀️' }}</span>
-    <span class="theme-toggle__label">{{ theme === 'light' ? 'Escuro' : 'Claro' }}</span>
+    <span class="theme-toggle__icon">{{ theme === 'dark' ? '🌙' : '☀️' }}</span>
+    <span class="theme-toggle__label">{{ theme === 'dark' ? 'Escuro' : 'Claro' }}</span>
   </button>
 </template>
 

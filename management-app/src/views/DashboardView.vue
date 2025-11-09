@@ -215,7 +215,7 @@ const refreshData = async () => {
 
 onMounted(async () => {
   await orderStore.fetchOrders()
-  await storeStore.fetchStore('1')
+  await storeStore.fetchStore('J9UBYRwCqHDlhyhLeY28')
 })
 </script>
 

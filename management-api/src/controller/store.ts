@@ -11,6 +11,7 @@ async function getStore(req: Request, res: Response) {
     const store = await StoreService.getStore(parsedParams.data.id);
     return res.json(store);
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }

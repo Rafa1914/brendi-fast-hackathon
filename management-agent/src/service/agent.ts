@@ -6,7 +6,7 @@ import { logger } from '../utils/logger';
 const SYSTEM_PROMPT_CHAT = `Você é um assistente especializado em análise de dados de loja. 
 Você ajuda a interpretar métricas, identificar tendências e fornecer insights sobre o desempenho da loja.
 Seja objetivo, claro e focado em dados. Use os dados fornecidos para fundamentar suas respostas.
-Você tem acesso a tools para buscar dados atualizados de analytics quando necessário.`;
+Você tem acesso a tools para buscar dados atualizados de analytics e feedbacks quando necessário.`;
 
 const SYSTEM_PROMPT_INSIGHTS = `Você é um analista especializado em e-commerce. 
 Analise os dados fornecidos e gere insights acionáveis sobre o desempenho da loja.
@@ -33,8 +33,10 @@ Foque em:
 - Oportunidades de melhoria
 - Pontos fortes e fracos
 - Recomendações práticas e acionáveis
+- Análise de satisfação do cliente (use getFeedbackAnalytics quando relevante)
+- Correlação entre dados de vendas e feedbacks
 
-Seja objetivo, claro e baseado em dados. Use os tools disponíveis para buscar dados atualizados se necessário.
+Seja objetivo, claro e baseado em dados. Use os tools disponíveis (getAnalytics e getFeedbackAnalytics) para buscar dados atualizados se necessário.
 Retorne APENAS o JSON, sem texto adicional antes ou depois.`;
 
 async function chat(request: ChatRequest): Promise<ChatResponse> {
@@ -81,8 +83,10 @@ Inclua:
    - Principais tendências identificadas
    - Oportunidades de melhoria
    - Análise de produtos e vendas
+   - Satisfação do cliente (considere usar getFeedbackAnalytics para dados de feedback)
 
-Seja específico e baseie-se nos dados fornecidos. Use os tools disponíveis se precisar de dados mais detalhados.
+Seja específico e baseie-se nos dados fornecidos. Use os tools disponíveis (getAnalytics e getFeedbackAnalytics) se precisar de dados mais detalhados.
+Considere buscar dados de feedback para correlacionar com os dados de vendas e fornecer insights mais completos.
 Lembre-se: retorne APENAS o JSON válido, sem texto adicional.`;
   
   const response = await agentProvider.generate({

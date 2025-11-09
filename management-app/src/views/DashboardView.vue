@@ -1,11 +1,5 @@
 <template>
   <AppLayout>
-    <template #header-actions>
-      <BaseButton @click="refreshData" :loading="orderStore.loading">
-        Atualizar
-      </BaseButton>
-    </template>
-
     <div class="dashboard">
       <!-- Filtros de Data -->
       <DateFilters
@@ -130,7 +124,6 @@ import { useOrderStore } from '@/stores/order'
 import { useStoreStore } from '@/stores/store'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import BaseCard from '@/components/design-system/BaseCard.vue'
-import BaseButton from '@/components/design-system/BaseButton.vue'
 import BaseStatCard from '@/components/design-system/BaseStatCard.vue'
 import OrderList from '@/components/orders/OrderList.vue'
 import OrdersByDayChart from '@/components/charts/OrdersByDayChart.vue'
@@ -207,10 +200,6 @@ const periodDistribution = computed(() => {
 
 const handleFiltersUpdate = async (filters: OrderFilters) => {
   await orderStore.fetchOrders(filters)
-}
-
-const refreshData = async () => {
-  await orderStore.fetchOrders(orderStore.filters)
 }
 
 onMounted(async () => {

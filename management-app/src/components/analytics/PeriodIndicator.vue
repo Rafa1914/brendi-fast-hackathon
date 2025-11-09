@@ -31,10 +31,8 @@ const periodInfo = computed(() => {
   const dates = props.orders
     .map(order => new Date(order.createdAt))
     .sort((a, b) => a.getTime() - b.getTime())
-
   const startDate = formatDate(dates[0])
   const endDate = formatDate(dates[dates.length - 1])
-
   return {
     startDate,
     endDate,

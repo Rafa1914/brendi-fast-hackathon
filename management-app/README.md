@@ -38,9 +38,7 @@ management-app/
 │   │   ├── order.ts
 │   │   └── store.ts
 │   ├── views/                 # Views/páginas
-│   │   ├── DashboardView.vue
-│   │   ├── OrdersView.vue
-│   │   └── AnalyticsView.vue
+│   │   └── DashboardView.vue
 │   ├── router/                # Configuração de rotas
 │   │   └── index.ts
 │   ├── App.vue
@@ -102,9 +100,7 @@ O proxy está configurado no `vite.config.ts` para redirecionar requisições `/
 
 ## 📊 Funcionalidades
 
-- **Dashboard**: Visão geral com estatísticas principais
-- **Pedidos**: Listagem e filtros de pedidos
-- **Análises**: Análise de produtos e distribuição por período
+- **Dashboard**: Visão geral com estatísticas principais, gráficos, análise de produtos e distribuição por período
 
 ## 🎨 Design System
 

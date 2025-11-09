@@ -312,7 +312,7 @@ function analyzeLoyalCustomers(orders: Order[]): LoyalCustomer[] {
       }
       return b.totalRevenue - a.totalRevenue;
     })
-    .slice(0, 10);
+    .slice(0, 5);
 }
 
 function calculatePreparationTimeStats(orders: Order[]): PreparationTimeStats | undefined {

@@ -53,26 +53,28 @@
 
     <!-- Gráficos de Distribuição -->
     <div class="customers-tab__charts">
-      <BaseCard>
-        <h3 class="customers-tab__chart-title">Distribuição por Avaliação</h3>
-        <div class="customers-tab__chart-wrapper">
-          <BaseBarChart
-            v-if="!feedbackStore.loading && ratingChartData"
-            :data="ratingChartData"
-            :options="ratingChartOptions"
-          />
-          <BaseSkeleton v-else width="100%" height="300px" />
+      <BaseBarChart
+        v-if="!feedbackStore.loading && ratingChartData"
+        title="Distribuição por Avaliação"
+        :data="ratingChartData"
+        :options="ratingChartOptions"
+      />
+      <BaseCard v-else>
+        <div class="customers-tab__chart-skeleton">
+          <BaseSkeleton width="40%" height="1.25rem" style="margin-bottom: 1.5rem;" />
+          <BaseSkeleton width="100%" height="300px" />
         </div>
       </BaseCard>
 
-      <BaseCard>
-        <h3 class="customers-tab__chart-title">Distribuição por Categoria</h3>
-        <div class="customers-tab__chart-wrapper">
-          <BasePieChart
-            v-if="!feedbackStore.loading && categoryChartData"
-            :data="categoryChartData"
-          />
-          <BaseSkeleton v-else width="100%" height="300px" />
+      <BasePieChart
+        v-if="!feedbackStore.loading && categoryChartData"
+        title="Distribuição por Categoria"
+        :data="categoryChartData"
+      />
+      <BaseCard v-else-if="feedbackStore.loading">
+        <div class="customers-tab__chart-skeleton">
+          <BaseSkeleton width="40%" height="1.25rem" style="margin-bottom: 1.5rem;" />
+          <BaseSkeleton width="100%" height="300px" />
         </div>
       </BaseCard>
     </div>
@@ -80,7 +82,7 @@
     <!-- Top Clientes e Lista de Feedbacks -->
     <div class="customers-tab__content-row">
       <!-- Top Clientes -->
-      <BaseCard>
+      <BaseCard class="customers-tab__card">
         <h3 class="customers-tab__section-title">Top Clientes</h3>
         <div v-if="feedbackStore.loading" class="customers-tab__loading-content">
           <div v-for="i in 5" :key="i" class="customers-tab__skeleton-item">
@@ -125,7 +127,7 @@
       </BaseCard>
 
       <!-- Lista de Feedbacks -->
-      <BaseCard>
+      <BaseCard class="customers-tab__card">
         <h3 class="customers-tab__section-title">Feedbacks Recentes</h3>
         <div v-if="feedbackStore.loading" class="customers-tab__loading-content">
           <div v-for="i in 5" :key="i" class="customers-tab__skeleton-item">
@@ -308,19 +310,8 @@ const formatDate = (dateString: string): string => {
   }
 }
 
-.customers-tab__chart-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--color-text);
-  margin: 0 0 1.5rem 0;
-  padding: 0 1rem;
-  padding-top: 1rem;
-}
-
-.customers-tab__chart-wrapper {
-  padding: 0 1rem 1rem 1rem;
-  height: 300px;
-  position: relative;
+.customers-tab__chart-skeleton {
+  padding: 1rem;
 }
 
 .customers-tab__content-row {
@@ -339,16 +330,13 @@ const formatDate = (dateString: string): string => {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--color-text);
-  margin: 0 0 1.5rem 0;
-  padding: 0 1rem;
-  padding-top: 1rem;
+  margin: 0 0 1rem 0;
 }
 
 .customers-tab__loading-content {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 1rem;
 }
 
 .customers-tab__skeleton-item {
@@ -357,6 +345,36 @@ const formatDate = (dateString: string): string => {
   padding: 1rem;
   background: var(--color-background);
   border-radius: var(--radius-md);
+}
+
+.customers-tab__card {
+  display: flex;
+  flex-direction: column;
+  max-height: 600px;
+  overflow: hidden;
+  padding: 0;
+}
+
+.customers-tab__card > .customers-tab__section-title {
+  flex-shrink: 0;
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+}
+
+.customers-tab__card > .customers-tab__top-customers,
+.customers-tab__card > .customers-tab__feedbacks,
+.customers-tab__card > .customers-tab__loading-content,
+.customers-tab__card > .customers-tab__empty {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.customers-tab__card > .customers-tab__loading-content {
+  padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+.customers-tab__card > .customers-tab__empty {
+  padding: 2rem 1.5rem;
 }
 
 .customers-tab__empty {
@@ -368,27 +386,26 @@ const formatDate = (dateString: string): string => {
 .customers-tab__top-customers {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-  max-height: 600px;
-  overflow-y: auto;
+  gap: 0.75rem;
+  padding: 0 1.5rem 1.5rem 1.5rem;
+  margin: 0;
 }
 
 .customers-tab__customer-item {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
+  gap: 0.75rem;
+  padding: 0.75rem;
   background: var(--color-background);
   border-radius: var(--radius-md);
   transition: background-color 0.3s ease;
 }
 
 .customers-tab__customer-rank {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: var(--color-primary);
-  min-width: 40px;
+  min-width: 35px;
   text-align: center;
 }
 
@@ -411,8 +428,9 @@ const formatDate = (dateString: string): string => {
 
 .customers-tab__customer-stats {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
+  font-size: 0.8125rem;
 }
 
 .customers-tab__customer-stat {
@@ -438,14 +456,13 @@ const formatDate = (dateString: string): string => {
 .customers-tab__feedbacks {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-  max-height: 600px;
-  overflow-y: auto;
+  gap: 0.75rem;
+  padding: 0 1.5rem 1.5rem 1.5rem;
+  margin: 0;
 }
 
 .customers-tab__feedback-item {
-  padding: 1rem;
+  padding: 0.75rem;
   background: var(--color-background);
   border-radius: var(--radius-md);
   border-left: 4px solid var(--color-primary);
@@ -456,7 +473,8 @@ const formatDate = (dateString: string): string => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+  gap: 0.5rem;
 }
 
 .customers-tab__feedback-rating {
@@ -466,7 +484,7 @@ const formatDate = (dateString: string): string => {
 }
 
 .customers-tab__rating-value {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: var(--color-primary);
 }
@@ -494,13 +512,15 @@ const formatDate = (dateString: string): string => {
 }
 
 .customers-tab__feedback-content {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .customers-tab__feedback-text {
   color: var(--color-text);
-  line-height: 1.5;
+  line-height: 1.4;
   margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .customers-tab__feedback-footer {

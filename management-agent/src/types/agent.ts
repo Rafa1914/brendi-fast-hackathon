@@ -17,9 +17,15 @@ export interface InsightsRequest {
   period?: string;
 }
 
+export interface InsightSection {
+  title: string;
+  content: string;
+}
+
 export interface InsightsResponse {
-  insights: string;
-  recommendations?: string[];
-  highlights?: string[];
+  summary: string;
+  highlights: string[];
+  recommendations: string[];
+  sections: InsightSection[];
 }
 

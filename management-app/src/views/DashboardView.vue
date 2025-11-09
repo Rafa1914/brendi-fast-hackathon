@@ -1,5 +1,5 @@
 <template>
-  <AppLayout>
+  <AppLayout :store-name="storeStore.storeName">
     <div class="dashboard">
       <!-- Filtros de Data e Período -->
       <div class="dashboard__filters-row">
@@ -40,15 +40,6 @@
           icon="📊"
         >
           <template #icon>📊</template>
-        </BaseStatCard>
-
-        <BaseStatCard
-          title="Loja"
-          :value="storeStore.storeName"
-          variant="primary"
-          icon="🏪"
-        >
-          <template #icon>🏪</template>
         </BaseStatCard>
       </div>
 

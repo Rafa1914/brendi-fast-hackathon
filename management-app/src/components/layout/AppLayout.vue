@@ -2,7 +2,7 @@
   <div class="app-layout">
     <header class="app-layout__header">
       <div class="app-layout__header-left">
-        <h1 class="app-layout__logo">🍽️ Dashboard</h1>
+        <h1 class="app-layout__logo">🍽️ {{ storeName || 'Dashboard' }}</h1>
       </div>
       <div class="app-layout__header-actions">
         <ThemeToggle />
@@ -19,6 +19,10 @@
 
 <script setup lang="ts">
 import ThemeToggle from '@/components/design-system/ThemeToggle.vue'
+
+defineProps<{
+  storeName?: string
+}>()
 </script>
 
 <style scoped>

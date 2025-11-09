@@ -89,15 +89,9 @@ import AppLayout from '@/components/layout/AppLayout.vue'
 import BaseCard from '@/components/design-system/BaseCard.vue'
 import BaseButton from '@/components/design-system/BaseButton.vue'
 import BaseStatCard from '@/components/design-system/BaseStatCard.vue'
+import { formatCurrency } from '@/utils/format'
 
 const orderStore = useOrderStore()
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(value/100)
-}
 
 const productAnalysis = computed(() => {
   const productMap = new Map<string, { id: string; name: string; totalQuantity: number; totalRevenue: number }>()

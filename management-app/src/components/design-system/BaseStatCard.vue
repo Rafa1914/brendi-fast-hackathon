@@ -19,6 +19,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import BaseCard from './BaseCard.vue'
+import { formatCurrency, formatNumber, formatPercentage } from '@/utils/format'
 
 interface Trend {
   type: 'positive' | 'negative' | 'neutral'
@@ -39,17 +40,14 @@ const formattedValue = computed(() => {
   if (typeof props.value === 'string') return props.value
   
   if (props.format === 'currency') {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(props.value/100)
+    return formatCurrency(props.value)
   }
   
   if (props.format === 'percentage') {
-    return `${props.value.toFixed(1)}%`
+    return formatPercentage(props.value)
   }
   
-  return new Intl.NumberFormat('pt-BR').format(props.value)
+  return formatNumber(props.value)
 })
 </script>
 

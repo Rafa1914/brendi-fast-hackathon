@@ -20,7 +20,7 @@
           <div class="order-item__header">
             <div class="order-item__info">
               <h3 class="order-item__id">Pedido #{{ order.id.slice(0, 8) }}</h3>
-              <p class="order-item__date">{{ formatDate(order.createdAt) }}</p>
+              <p class="order-item__date">{{ formatDateTime(order.createdAt) }}</p>
             </div>
             <div class="order-item__total">
               {{ formatCurrency(order.totalPrice) }}
@@ -47,30 +47,13 @@
 import type { Order } from '@/types/order'
 import BaseCard from '@/components/design-system/BaseCard.vue'
 import BaseLoading from '@/components/design-system/BaseLoading.vue'
+import { formatCurrency, formatDateTime } from '@/utils/format'
 
 defineProps<{
   orders: Order[]
   loading?: boolean
   error?: Error | null
 }>()
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(value/100)
-}
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date)
-}
 </script>
 
 <style scoped>

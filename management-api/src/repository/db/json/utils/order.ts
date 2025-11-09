@@ -3,10 +3,6 @@ import { Order, OrderFilters } from "../../../../types/order";
 const filterOrders = (orders: Order[], filters: OrderFilters): Order[] => {
   let filtered = orders;
 
-  if (filters.storeId) {
-    filtered = filtered.filter((order) => order.storeId === filters.storeId);
-  }
-
   if (filters.dateRange) {
     filtered = filtered.filter((order) => {
       const orderDate = order.createdAt;

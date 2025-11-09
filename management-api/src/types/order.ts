@@ -14,7 +14,6 @@ export interface OrderProduct {
 }
 
 export interface OrderFilters {
-    storeId?: string;
     dateRange?: {
         startDate?: Date;
         endDate?: Date;

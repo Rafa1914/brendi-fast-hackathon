@@ -150,12 +150,6 @@
         </div>
       </div>
 
-
-      <!-- Insights do Período -->
-      <div class="dashboard__insights-section">
-        <InsightsCard :auto-generate="true" />
-      </div>
-
       <!-- Tempos de Preparação e Clientes Fiéis -->
       <div class="dashboard__content-row dashboard__content-row--split">
         <BaseCard>
@@ -262,6 +256,11 @@
             </div>
           </div>
         </BaseCard>
+      </div>
+
+      <!-- Insights do Período -->
+      <div class="dashboard__insights-section">
+        <InsightsCard :auto-generate="true" />
       </div>
 
           </div>

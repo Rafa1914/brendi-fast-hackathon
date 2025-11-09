@@ -52,6 +52,16 @@ export interface LoyalCustomer {
   averageTicket: number;
 }
 
+export interface PreparationTimeStats {
+  averageTimeToConfirm: number;
+  averageTimeToReady: number;
+  averageTimeToTransit: number;
+  averageTimeToDelivered: number;
+  totalTimeAverage: number;
+  ordersWithData: number;
+  ordersWithoutData: number;
+}
+
 export interface AnalyticsResponse {
   stats: OrderStats;
   ordersByDay: OrdersByDay[];
@@ -66,6 +76,7 @@ export interface AnalyticsResponse {
     endDate: string;
     totalOrders: number;
   };
+  preparationTimeStats?: PreparationTimeStats;
 }
 
 export interface AnalyticsFilters {

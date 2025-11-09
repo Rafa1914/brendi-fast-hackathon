@@ -40,5 +40,11 @@ export const adaptOrderFromJson = (orderJson: OrderJson): Order => {
       quantity: typeof product.quantity === 'string' ? parseInt(product.quantity) : product.quantity,
     })),
     createdAt,
+    elapsedTimes: orderJson.elapsedTimes ? {
+      timeToConfirm: orderJson.elapsedTimes.timeToConfirm,
+      timeToReady: orderJson.elapsedTimes.timeToReady,
+      timeToTransit: orderJson.elapsedTimes.timeToTransit,
+      timeToDelivered: orderJson.elapsedTimes.timeToDelivered,
+    } : undefined,
   };
 };

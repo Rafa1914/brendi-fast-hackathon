@@ -91,3 +91,22 @@ export function formatDateTimeWithSeconds(dateString: string | Date): string {
   return formatDate(dateString, { includeTime: true, includeSeconds: true })
 }
 
+/**
+ * Formata um tempo em segundos para formato legível (minutos e segundos)
+ * 
+ * @param seconds - Tempo em segundos
+ * @returns String formatada (ex: "5min 30s" ou "45s")
+ */
+export function formatTime(seconds: number): string {
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = Math.floor(seconds % 60)
+  
+  if (minutes > 0) {
+    if (remainingSeconds > 0) {
+      return `${minutes}min ${remainingSeconds}s`
+    }
+    return `${minutes}min`
+  }
+  return `${remainingSeconds}s`
+}
+

@@ -6,6 +6,8 @@
         <BaseButton
           :disabled="loading"
           @click="generateInsights"
+          variant="ghost"
+          class="insights-card__button"
         >
           {{ loading ? 'Gerando...' : 'Gerar Insights' }}
         </BaseButton>
@@ -119,61 +121,70 @@ const generateInsights = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 1rem;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--color-border);
+  gap: 0.75rem;
 }
 
 .insights-card__title {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--color-text);
   margin: 0;
 }
 
+.insights-card__button {
+  font-size: 0.8125rem;
+  padding: 0.5rem 0.875rem;
+  min-height: auto;
+}
+
 .insights-card__content {
-  padding: 1rem 0;
+  padding: 0.75rem 0;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
+  max-height: 600px;
+  overflow-y: auto;
 }
 
 .insights-card__summary {
-  padding: 1rem;
+  padding: 0.75rem;
   background: var(--color-background);
   border-radius: var(--radius-md);
-  border-left: 3px solid var(--color-primary);
+  border-left: 2px solid var(--color-primary);
 }
 
 .insights-card__summary-text {
   color: var(--color-text);
-  line-height: 1.8;
-  font-size: 1rem;
+  line-height: 1.6;
+  font-size: 0.875rem;
   margin: 0;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .insights-card__section-title {
-  font-size: 1.125rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--color-text);
-  margin: 0 0 0.75rem 0;
-  padding-bottom: 0.5rem;
+  margin: 0 0 0.5rem 0;
+  padding-bottom: 0.375rem;
   border-bottom: 1px solid var(--color-border);
 }
 
 .insights-card__highlights,
 .insights-card__recommendations {
-  padding: 1rem;
+  padding: 0.75rem;
   background: var(--color-background);
   border-radius: var(--radius-md);
 }
 
 .insights-card__highlights {
-  border-left: 3px solid var(--color-success);
+  border-left: 2px solid var(--color-success);
 }
 
 .insights-card__recommendations {
-  border-left: 3px solid var(--color-warning);
+  border-left: 2px solid var(--color-warning);
 }
 
 .insights-card__list {
@@ -187,9 +198,9 @@ const generateInsights = async () => {
 
 .insights-card__list-item {
   color: var(--color-text);
-  line-height: 1.7;
-  font-size: 0.9375rem;
-  padding-left: 1.5rem;
+  line-height: 1.5;
+  font-size: 0.8125rem;
+  padding-left: 1.25rem;
   position: relative;
 }
 
@@ -209,11 +220,11 @@ const generateInsights = async () => {
 .insights-card__sections {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.75rem;
 }
 
 .insights-card__section {
-  padding: 1rem;
+  padding: 0.75rem;
   background: var(--color-background);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
@@ -221,21 +232,22 @@ const generateInsights = async () => {
 
 .insights-card__section-content {
   color: var(--color-text);
-  line-height: 1.8;
-  font-size: 0.9375rem;
+  line-height: 1.6;
+  font-size: 0.8125rem;
   margin: 0;
   white-space: pre-wrap;
   word-wrap: break-word;
 }
 
 .insights-card__empty {
-  padding: 2rem;
+  padding: 1.5rem;
   text-align: center;
   color: var(--color-text-light);
+  font-size: 0.875rem;
 }
 
 .insights-card__loading {
-  padding: 2rem;
+  padding: 1.5rem;
   display: flex;
   justify-content: center;
   align-items: center;

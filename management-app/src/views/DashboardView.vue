@@ -182,13 +182,77 @@
         </BaseCard>
       </div>
 
-      <!-- Insights do Período -->
-      <div class="dashboard__insights">
-        <InsightsCard />
+      <!-- Tempos de Preparação -->
+      <div class="dashboard__content-row">
+        <BaseCard>
+          <h3 class="dashboard__section-title">Tempos de Preparação</h3>
+          <div v-if="analyticsStore.loading" class="dashboard__loading-content">
+            <div v-for="i in 5" :key="i" class="dashboard__skeleton-item">
+              <BaseSkeleton width="50%" height="1rem" />
+              <BaseSkeleton width="30%" height="0.875rem" style="margin-top: 0.5rem;" />
+              <BaseSkeleton width="35%" height="1.25rem" style="margin-top: 0.5rem; margin-left: auto;" />
+            </div>
+          </div>
+          <div v-else-if="!analyticsStore.analytics?.preparationTimeStats" class="dashboard__empty">
+            <p>Nenhum dado de tempo de preparação disponível</p>
+          </div>
+          <div v-else class="dashboard__preparation-times">
+            <div class="dashboard__preparation-info">
+              <span class="dashboard__preparation-label">Pedidos com dados:</span>
+              <span class="dashboard__preparation-value">{{ analyticsStore.analytics.preparationTimeStats.ordersWithData }}</span>
+            </div>
+            <div v-if="analyticsStore.analytics.preparationTimeStats.ordersWithoutData > 0" class="dashboard__preparation-info">
+              <span class="dashboard__preparation-label">Pedidos sem dados:</span>
+              <span class="dashboard__preparation-value">{{ analyticsStore.analytics.preparationTimeStats.ordersWithoutData }}</span>
+            </div>
+            <div class="dashboard__preparation-times-list">
+              <div class="dashboard__preparation-time-item">
+                <div class="dashboard__preparation-time-header">
+                  <span class="dashboard__preparation-time-label">⏱️ Tempo até Confirmação</span>
+                </div>
+                <div class="dashboard__preparation-time-value">
+                  {{ formatTime(analyticsStore.analytics.preparationTimeStats.averageTimeToConfirm) }}
+                </div>
+              </div>
+              <div class="dashboard__preparation-time-item">
+                <div class="dashboard__preparation-time-header">
+                  <span class="dashboard__preparation-time-label">🍕 Tempo até Pronto</span>
+                </div>
+                <div class="dashboard__preparation-time-value">
+                  {{ formatTime(analyticsStore.analytics.preparationTimeStats.averageTimeToReady) }}
+                </div>
+              </div>
+              <div class="dashboard__preparation-time-item">
+                <div class="dashboard__preparation-time-header">
+                  <span class="dashboard__preparation-time-label">🚚 Tempo em Trânsito</span>
+                </div>
+                <div class="dashboard__preparation-time-value">
+                  {{ formatTime(analyticsStore.analytics.preparationTimeStats.averageTimeToTransit) }}
+                </div>
+              </div>
+              <div class="dashboard__preparation-time-item">
+                <div class="dashboard__preparation-time-header">
+                  <span class="dashboard__preparation-time-label">✅ Tempo até Entrega</span>
+                </div>
+                <div class="dashboard__preparation-time-value">
+                  {{ formatTime(analyticsStore.analytics.preparationTimeStats.averageTimeToDelivered) }}
+                </div>
+              </div>
+              <div class="dashboard__preparation-time-item dashboard__preparation-time-item--total">
+                <div class="dashboard__preparation-time-header">
+                  <span class="dashboard__preparation-time-label">⏳ Tempo Total Médio</span>
+                </div>
+                <div class="dashboard__preparation-time-value dashboard__preparation-time-value--total">
+                  {{ formatTime(analyticsStore.analytics.preparationTimeStats.totalTimeAverage) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </BaseCard>
       </div>
 
-      <!-- Clientes Fiéis e Pedidos Recentes -->
-      <div class="dashboard__content-row">
+      <!-- Clientes Fiéis e Insights -->
+      <div class="dashboard__content-row dashboard__content-row--with-insights">
         <BaseCard>
           <h3 class="dashboard__section-title">Clientes Mais Fiéis</h3>
           <div v-if="analyticsStore.loading" class="dashboard__loading-content">
@@ -233,15 +297,10 @@
           </div>
         </BaseCard>
 
-        <!-- Pedidos Recentes -->
-        <BaseCard>
-          <h3 class="dashboard__section-title">Pedidos Recentes</h3>
-          <OrderList
-            :orders="analyticsStore.analytics?.recentOrders || []"
-            :loading="analyticsStore.loading"
-            :error="analyticsStore.error"
-          />
-        </BaseCard>
+        <!-- Insights do Período (mais discreto) -->
+        <div class="dashboard__insights-wrapper">
+          <InsightsCard />
+        </div>
       </div>
 
       <!-- Chat com Agent (flutuante) -->
@@ -261,12 +320,11 @@ import BaseBarChart from '@/components/design-system/BaseBarChart.vue'
 import BaseLineChart from '@/components/design-system/BaseLineChart.vue'
 import BasePieChart from '@/components/design-system/BasePieChart.vue'
 import BaseSkeleton from '@/components/design-system/BaseSkeleton.vue'
-import OrderList from '@/components/orders/OrderList.vue'
 import PeriodIndicator from '@/components/analytics/PeriodIndicator.vue'
 import DateFilters from '@/components/filters/DateFilters.vue'
 import Chat from '@/components/agent/Chat.vue'
 import InsightsCard from '@/components/agent/InsightsCard.vue'
-import { formatCurrency } from '@/utils/format'
+import { formatCurrency, formatTime } from '@/utils/format'
 import { useOrdersByDayChart } from '@/composables/useOrdersByDayChart'
 import { useOrdersByWeekChart } from '@/composables/useOrdersByWeekChart'
 import { useTopProductsPieChart } from '@/composables/useTopProductsPieChart'
@@ -368,6 +426,16 @@ onMounted(async () => {
   gap: 1.5rem;
 }
 
+.dashboard__content-row--with-insights {
+  grid-template-columns: 2fr 1fr;
+}
+
+@media (max-width: 1024px) {
+  .dashboard__content-row--with-insights {
+    grid-template-columns: 1fr;
+  }
+}
+
 .dashboard__stat-skeleton {
   min-height: 120px;
 }
@@ -396,8 +464,9 @@ onMounted(async () => {
   border-radius: var(--radius-md);
 }
 
-.dashboard__insights {
-  margin-top: 2rem;
+.dashboard__insights-wrapper {
+  display: flex;
+  flex-direction: column;
 }
 
 .dashboard__section-title {
@@ -562,5 +631,77 @@ onMounted(async () => {
 .dashboard__stat-value--primary {
   color: var(--color-primary);
   font-size: 1.125rem;
+}
+
+.dashboard__preparation-times {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.dashboard__preparation-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+  transition: background-color 0.3s ease;
+}
+
+.dashboard__preparation-label {
+  font-size: 0.875rem;
+  color: var(--color-text-light);
+}
+
+.dashboard__preparation-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  transition: color 0.3s ease;
+}
+
+.dashboard__preparation-times-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dashboard__preparation-time-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+  transition: background-color 0.3s ease;
+}
+
+.dashboard__preparation-time-item--total {
+  border: 2px solid var(--color-primary);
+  background: var(--color-background);
+}
+
+.dashboard__preparation-time-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dashboard__preparation-time-label {
+  font-weight: 600;
+  color: var(--color-text);
+  transition: color 0.3s ease;
+}
+
+.dashboard__preparation-time-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.dashboard__preparation-time-value--total {
+  font-size: 1.25rem;
+  color: var(--color-primary);
 }
 </style>

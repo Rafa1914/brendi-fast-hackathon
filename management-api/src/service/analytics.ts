@@ -10,6 +10,7 @@ import {
   PeriodDistribution,
   OrderTypeDistribution,
   LoyalCustomer,
+  PreparationTimeStats,
 } from "../types/analytics";
 
 function getWeekLabel(date: Date): string {
@@ -317,6 +318,45 @@ function analyzeLoyalCustomers(orders: Order[]): LoyalCustomer[] {
     .slice(0, 10);
 }
 
+function calculatePreparationTimeStats(orders: Order[]): PreparationTimeStats | undefined {
+  const ordersWithTimes = orders.filter((order) => order.elapsedTimes !== undefined);
+  
+  if (ordersWithTimes.length === 0) {
+    return undefined;
+  }
+
+  let totalTimeToConfirm = 0;
+  let totalTimeToReady = 0;
+  let totalTimeToTransit = 0;
+  let totalTimeToDelivered = 0;
+
+  ordersWithTimes.forEach((order) => {
+    if (order.elapsedTimes) {
+      totalTimeToConfirm += order.elapsedTimes.timeToConfirm;
+      totalTimeToReady += order.elapsedTimes.timeToReady;
+      totalTimeToTransit += order.elapsedTimes.timeToTransit;
+      totalTimeToDelivered += order.elapsedTimes.timeToDelivered;
+    }
+  });
+
+  const count = ordersWithTimes.length;
+  const averageTimeToConfirm = totalTimeToConfirm / count;
+  const averageTimeToReady = totalTimeToReady / count;
+  const averageTimeToTransit = totalTimeToTransit / count;
+  const averageTimeToDelivered = totalTimeToDelivered / count;
+  const totalTimeAverage = averageTimeToConfirm + averageTimeToReady + averageTimeToTransit + averageTimeToDelivered;
+
+  return {
+    averageTimeToConfirm,
+    averageTimeToReady,
+    averageTimeToTransit,
+    averageTimeToDelivered,
+    totalTimeAverage,
+    ordersWithData: count,
+    ordersWithoutData: orders.length - count,
+  };
+}
+
 async function getAnalytics(
   filters: AnalyticsFilters
 ): Promise<AnalyticsResponse> {
@@ -335,6 +375,7 @@ async function getAnalytics(
   const loyalCustomers = analyzeLoyalCustomers(orders);
   const recentOrders = getRecentOrders(orders);
   const periodInfo = getPeriodInfo(orders);
+  const preparationTimeStats = calculatePreparationTimeStats(orders);
 
   return {
     stats,
@@ -346,6 +387,7 @@ async function getAnalytics(
     loyalCustomers,
     recentOrders,
     periodInfo,
+    preparationTimeStats,
   };
 }
 

@@ -1,3 +1,10 @@
+export interface OrderElapsedTimes {
+  timeToConfirm: number
+  timeToReady: number
+  timeToTransit: number
+  timeToDelivered: number
+}
+
 export interface Order {
   id: string
   type: OrderType
@@ -5,6 +12,7 @@ export interface Order {
   totalPrice: number
   products: OrderProduct[]
   createdAt: string
+  elapsedTimes?: OrderElapsedTimes
 }
 
 export interface OrderProduct {

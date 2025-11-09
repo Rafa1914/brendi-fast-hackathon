@@ -1,9 +1,10 @@
 export interface Order {
   id: string;
+  type: OrderType;
+  customer: OrderCustomer;
   totalPrice: number;
   products: OrderProduct[];
   createdAt: Date;
-  storeId?: string;
 }
 
 export interface OrderProduct {
@@ -18,4 +19,15 @@ export interface OrderFilters {
         startDate?: Date;
         endDate?: Date;
     };
+}
+
+export interface OrderCustomer {
+    name: string;
+    phone: string;
+}
+
+export enum OrderType {
+    DELIVERY = 'delivery',
+    PICKUP = 'pickup',
+    OTHER = 'other',
 }

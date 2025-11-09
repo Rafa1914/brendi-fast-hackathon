@@ -4,40 +4,27 @@ import { AnalyticsResponse } from '../types/analytics';
 import { logger } from '../utils/logger';
 
 const SYSTEM_PROMPT_CHAT = `Você é um assistente especializado em análise de dados de loja. 
-Você ajuda a interpretar métricas, identificar tendências e fornecer insights sobre o desempenho da loja.
-Seja objetivo, claro e focado em dados. Use os dados fornecidos para fundamentar suas respostas.
-Você tem acesso a tools para buscar dados atualizados de analytics e feedbacks quando necessário.`;
+Seja CONCISO, objetivo e direto. Respostas curtas e focadas.
+Use tools apenas quando necessário. Priorize os dados já fornecidos.`;
 
-const SYSTEM_PROMPT_INSIGHTS = `Você é um analista especializado em e-commerce. 
-Analise os dados fornecidos e gere insights acionáveis sobre o desempenho da loja.
+const SYSTEM_PROMPT_INSIGHTS = `Você é um analista de e-commerce. Seja CONCISO e direto.
 
-IMPORTANTE: Sua resposta DEVE ser um JSON válido no seguinte formato:
+IMPORTANTE: Retorne APENAS JSON válido neste formato:
 {
-  "summary": "Resumo executivo de 2-3 frases sobre o desempenho geral",
+  "summary": "Resumo de 1-2 frases",
   "highlights": ["Destaque 1", "Destaque 2", "Destaque 3"],
-  "recommendations": ["Recomendação 1", "Recomendação 2", "Recomendação 3"],
+  "recommendations": ["Recomendação 1", "Recomendação 2"],
   "sections": [
-    {
-      "title": "Título da Seção 1",
-      "content": "Conteúdo detalhado da seção"
-    },
-    {
-      "title": "Título da Seção 2",
-      "content": "Conteúdo detalhado da seção"
-    }
+    {"title": "Título", "content": "Conteúdo conciso (máx 3 parágrafos)"}
   ]
 }
 
-Foque em:
-- Tendências e padrões identificados
-- Oportunidades de melhoria
-- Pontos fortes e fracos
-- Recomendações práticas e acionáveis
-- Análise de satisfação do cliente (use getFeedbackAnalytics quando relevante)
-- Correlação entre dados de vendas e feedbacks
-
-Seja objetivo, claro e baseado em dados. Use os tools disponíveis (getAnalytics e getFeedbackAnalytics) para buscar dados atualizados se necessário.
-Retorne APENAS o JSON, sem texto adicional antes ou depois.`;
+REGRAS:
+- Máximo 2-3 seções
+- Cada seção: máximo 3 parágrafos curtos
+- Use tools apenas se realmente necessário
+- Priorize dados já fornecidos
+- Seja objetivo e baseado em dados`;
 
 async function chat(request: ChatRequest): Promise<ChatResponse> {
   const { messages, analytics } = request;
@@ -60,7 +47,7 @@ async function chat(request: ChatRequest): Promise<ChatResponse> {
     messages: contextMessages.length > 0 ? contextMessages : undefined,
     analytics,
     systemPrompt: SYSTEM_PROMPT_CHAT,
-    maxSteps: 15,
+    maxSteps: 5,
   });
   
   return {
@@ -73,27 +60,23 @@ async function generateInsights(request: InsightsRequest): Promise<InsightsRespo
   
   const periodContext = period ? `Período de análise: ${period}\n\n` : '';
   
-  const prompt = `${periodContext}Analise os dados fornecidos e gere insights detalhados sobre o desempenho da loja.
-Inclua:
-1. Um resumo executivo (summary) de 2-3 frases sobre o desempenho geral
-2. 3-5 destaques principais (highlights) sobre pontos importantes
-3. 3-5 recomendações práticas e acionáveis (recommendations)
-4. 2-4 seções detalhadas (sections) com análises específicas sobre:
-   - Análise geral do desempenho
-   - Principais tendências identificadas
-   - Oportunidades de melhoria
-   - Análise de produtos e vendas
-   - Satisfação do cliente (considere usar getFeedbackAnalytics para dados de feedback)
+  const prompt = `${periodContext}Analise os dados e gere insights CONCISOS.
 
-Seja específico e baseie-se nos dados fornecidos. Use os tools disponíveis (getAnalytics e getFeedbackAnalytics) se precisar de dados mais detalhados.
-Considere buscar dados de feedback para correlacionar com os dados de vendas e fornecer insights mais completos.
-Lembre-se: retorne APENAS o JSON válido, sem texto adicional.`;
+Inclua:
+1. Resumo (summary): 1-2 frases
+2. 3 destaques principais (highlights)
+3. 2-3 recomendações (recommendations)
+4. 2 seções curtas (sections) sobre:
+   - Tendências principais
+   - Oportunidades de melhoria
+
+SEJA CONCISO. Use tools apenas se necessário. Retorne APENAS JSON válido.`;
   
   const response = await agentProvider.generate({
     prompt,
     analytics,
     systemPrompt: SYSTEM_PROMPT_INSIGHTS,
-    maxSteps: 20,
+    maxSteps: 8,
   });
   
   try {

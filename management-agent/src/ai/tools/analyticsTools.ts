@@ -127,10 +127,10 @@ ${topCustomers.slice(0, 10).map((c, i) =>
 }
 
 export const getAnalyticsTool = tool({
-  description: 'Busca dados de analytics da loja para um período específico. Use este tool quando precisar de dados atualizados sobre pedidos, receita, produtos, etc. Retorna dados formatados e prontos para análise.',
+  description: 'Busca analytics da loja (pedidos, receita, produtos). Use APENAS se não tiver dados ou precisar de período diferente.',
   inputSchema: z.object({
-    startDate: z.string().optional().describe('Data de início no formato ISO (ex: 2024-01-01T00:00:00.000Z)'),
-    endDate: z.string().optional().describe('Data de fim no formato ISO (ex: 2024-12-31T23:59:59.999Z)'),
+    startDate: z.string().optional().describe('Data início ISO (ex: 2024-01-01T00:00:00.000Z)'),
+    endDate: z.string().optional().describe('Data fim ISO (ex: 2024-12-31T23:59:59.999Z)'),
   }),
   execute: async ({ startDate, endDate }) => {
     try {
@@ -157,7 +157,7 @@ export const getAnalyticsTool = tool({
 });
 
 export const formatAnalyticsTool = tool({
-  description: 'Formata dados de analytics em uma string legível para análise. Use quando já tiver os dados de analytics e precisar formatá-los.',
+  description: 'Formata dados de analytics. Use apenas se necessário formatar dados já recebidos.',
   inputSchema: z.object({
     analytics: z.any().describe('Objeto com dados de analytics'),
   }),
@@ -170,10 +170,10 @@ export const formatAnalyticsTool = tool({
 });
 
 export const getFeedbackAnalyticsTool = tool({
-  description: 'Busca dados de analytics de feedbacks da loja para um período específico. Use este tool quando precisar de dados atualizados sobre avaliações, satisfação dos clientes, categorias de feedback, etc. Retorna dados formatados e prontos para análise.',
+  description: 'Busca analytics de feedbacks (avaliações, satisfação). Use APENAS se precisar analisar satisfação do cliente.',
   inputSchema: z.object({
-    startDate: z.string().optional().describe('Data de início no formato ISO (ex: 2024-01-01T00:00:00.000Z)'),
-    endDate: z.string().optional().describe('Data de fim no formato ISO (ex: 2024-12-31T23:59:59.999Z)'),
+    startDate: z.string().optional().describe('Data início ISO (ex: 2024-01-01T00:00:00.000Z)'),
+    endDate: z.string().optional().describe('Data fim ISO (ex: 2024-12-31T23:59:59.999Z)'),
   }),
   execute: async ({ startDate, endDate }) => {
     try {

@@ -7,18 +7,6 @@ const routes: RouteRecordRaw[] = [
     name: 'dashboard',
     component: () => import('@/views/DashboardView.vue'),
     meta: { title: 'Dashboard' }
-  },
-  {
-    path: '/orders',
-    name: 'orders',
-    component: () => import('@/views/OrdersView.vue'),
-    meta: { title: 'Pedidos' }
-  },
-  {
-    path: '/analytics',
-    name: 'analytics',
-    component: () => import('@/views/AnalyticsView.vue'),
-    meta: { title: 'Análises' }
   }
 ]
 
@@ -33,4 +21,3 @@ router.beforeEach((to, _from, next) => {
 })
 
 export default router
-

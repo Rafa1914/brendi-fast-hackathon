@@ -5,9 +5,14 @@ import router from './router'
 import './style.css'
 
 const app = createApp(App)
+const pinia = createPinia()
 
-app.use(createPinia())
+app.use(pinia)
 app.use(router)
 
-app.mount('#app')
+// Inicializar tema após criar o Pinia
+import { useThemeStore } from './stores/theme'
+const themeStore = useThemeStore()
+// O tema já é aplicado automaticamente no store
 
+app.mount('#app')

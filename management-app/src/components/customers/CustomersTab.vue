@@ -291,6 +291,7 @@ import type { ChartOptions, ChartData } from 'chart.js'
 import type { Order } from '@/types/order'
 import { OrderType } from '@/types/order'
 import { formatCurrency, formatDateTime, formatTime } from '@/utils/format'
+import { mapFeedbackCategory } from '@/utils/feedback'
 
 const feedbackStore = useFeedbackStore()
 const { getOrderById } = useOrderApi()
@@ -376,7 +377,9 @@ const categoryChartData = computed(() => {
   }
 
   return {
-    labels: feedbackStore.analytics.categoryDistribution.map(c => c.categoryLabel),
+    labels: feedbackStore.analytics.categoryDistribution.map(c => 
+      mapFeedbackCategory(c.category) || c.categoryLabel
+    ),
     datasets: [
       {
         data: feedbackStore.analytics.categoryDistribution.map(c => c.count),
@@ -411,14 +414,7 @@ const ratingChartOptions: ChartOptions<'bar'> = {
 }
 
 const formatCategory = (category: string): string => {
-  const categoryMap: Record<string, string> = {
-    'delivery-speed': 'Velocidade de Entrega',
-    'delivery-experience': 'Experiência de Entrega',
-    'overall-experience': 'Experiência Geral',
-    'food-quality': 'Qualidade da Comida',
-    'service': 'Atendimento'
-  }
-  return categoryMap[category] || category
+  return mapFeedbackCategory(category)
 }
 
 const formatDate = (dateString: string): string => {

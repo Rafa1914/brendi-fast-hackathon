@@ -29,7 +29,7 @@
         <BaseStatCard
           v-if="!analyticsStore.loading && analyticsStore.analytics"
           title="Receita Total"
-          :value="analyticsStore.analytics.stats.totalRevenue / 100"
+          :value="analyticsStore.analytics.stats.totalRevenue"
           format="currency"
           variant="primary"
           icon="💰"
@@ -63,7 +63,7 @@
         <BaseStatCard
           v-if="!analyticsStore.loading && analyticsStore.analytics"
           title="Ticket Médio"
-          :value="analyticsStore.analytics.stats.averageOrderValue / 100"
+          :value="analyticsStore.analytics.stats.averageOrderValue"
           format="currency"
           variant="warning"
           icon="📊"

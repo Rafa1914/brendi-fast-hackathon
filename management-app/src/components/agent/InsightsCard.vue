@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import BaseCard from '@/components/design-system/BaseCard.vue'
 import BaseButton from '@/components/design-system/BaseButton.vue'
 import BaseLoading from '@/components/design-system/BaseLoading.vue'
@@ -117,25 +117,20 @@ const generateInsights = async () => {
   }
 }
 
-// Observa mudanças nos filters para gerar insights automaticamente
+// Observa mudanças nos filters e no estado de loading para gerar insights automaticamente
 watch(
   () => [
     analyticsStore.filters?.dateRange?.startDate,
-    analyticsStore.filters?.dateRange?.endDate
+    analyticsStore.filters?.dateRange?.endDate,
+    analyticsStore.loading
   ],
   () => {
-    if (props.autoGenerate && !analyticsStore.loading) {
+    if (props.autoGenerate && !analyticsStore.loading && analyticsStore.filters?.dateRange) {
       generateInsights()
     }
   },
-  { immediate: false }
+  { immediate: true }
 )
-
-onMounted(() => {
-  if (props.autoGenerate && !analyticsStore.loading) {
-    generateInsights()
-  }
-})
 
 </script>
 

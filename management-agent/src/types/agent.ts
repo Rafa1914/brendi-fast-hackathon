@@ -1,4 +1,5 @@
-import { AnalyticsResponse } from "./analytics";
+import { AnalyticsResponse, AnalyticsFilters } from "./analytics";
+import { FeedbackAnalyticsResponse } from "./feedback";
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
@@ -15,8 +16,7 @@ export interface ChatResponse {
 }
 
 export interface InsightsRequest {
-  analytics: AnalyticsResponse;
-  period?: string;
+  filters?: AnalyticsFilters;
 }
 
 export interface InsightSection {

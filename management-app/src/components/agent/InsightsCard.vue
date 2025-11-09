@@ -4,6 +4,7 @@
       <div class="insights-card__header">
         <h3 class="insights-card__title">Insights do Período</h3>
         <BaseButton
+          v-if="!autoGenerate"
           :disabled="loading"
           @click="generateInsights"
           variant="ghost"
@@ -11,6 +12,7 @@
         >
           {{ loading ? 'Gerando...' : 'Gerar Insights' }}
         </BaseButton>
+        <span v-else-if="loading" class="insights-card__loading-indicator">Gerando insights...</span>
       </div>
 
       <div v-if="insights && !loading" class="insights-card__content">
@@ -64,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import BaseCard from '@/components/design-system/BaseCard.vue'
 import BaseButton from '@/components/design-system/BaseButton.vue'
 import BaseLoading from '@/components/design-system/BaseLoading.vue'
@@ -73,6 +75,14 @@ import { useAnalyticsStore } from '@/stores/analytics'
 
 import type { InsightsResponse } from '@/types/agent'
 
+interface Props {
+  autoGenerate?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  autoGenerate: false
+})
+
 const analyticsStore = useAnalyticsStore()
 const { generateInsights: generateInsightsApi } = useAgentApi()
 
@@ -80,16 +90,15 @@ const insights = ref<InsightsResponse | null>(null)
 const loading = ref(false)
 
 const generateInsights = async () => {
-  if (!analyticsStore.analytics || loading.value) return
+  if (loading.value) return
 
   loading.value = true
   insights.value = null
 
   try {
-    const { execute, data } = generateInsightsApi(
-      analyticsStore.analytics,
-      `${analyticsStore.analytics.periodInfo.startDate} até ${analyticsStore.analytics.periodInfo.endDate}`
-    )
+    // Envia apenas os filters, o backend busca os dados
+    const filters = analyticsStore.filters || {}
+    const { execute, data } = generateInsightsApi(filters)
     await execute()
 
     if (data.value) {
@@ -107,6 +116,26 @@ const generateInsights = async () => {
     loading.value = false
   }
 }
+
+// Observa mudanças nos filters para gerar insights automaticamente
+watch(
+  () => [
+    analyticsStore.filters?.dateRange?.startDate,
+    analyticsStore.filters?.dateRange?.endDate
+  ],
+  () => {
+    if (props.autoGenerate && !analyticsStore.loading) {
+      generateInsights()
+    }
+  },
+  { immediate: false }
+)
+
+onMounted(() => {
+  if (props.autoGenerate && !analyticsStore.loading) {
+    generateInsights()
+  }
+})
 
 </script>
 
@@ -137,6 +166,12 @@ const generateInsights = async () => {
   font-size: 0.8125rem;
   padding: 0.5rem 0.875rem;
   min-height: auto;
+}
+
+.insights-card__loading-indicator {
+  font-size: 0.8125rem;
+  color: var(--color-text-light);
+  font-style: italic;
 }
 
 .insights-card__content {

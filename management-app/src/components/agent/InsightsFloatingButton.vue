@@ -107,16 +107,15 @@ const toggleInsights = () => {
 }
 
 const generateInsights = async () => {
-  if (!analyticsStore.analytics || loading.value) return
+  if (loading.value) return
 
   loading.value = true
   insights.value = null
 
   try {
-    const { execute, data } = generateInsightsApi(
-      analyticsStore.analytics,
-      `${analyticsStore.analytics.periodInfo.startDate} até ${analyticsStore.analytics.periodInfo.endDate}`
-    )
+    // Envia apenas os filters, o backend busca os dados
+    const filters = analyticsStore.filters || {}
+    const { execute, data } = generateInsightsApi(filters)
     await execute()
 
     if (data.value) {

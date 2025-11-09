@@ -12,10 +12,16 @@ const chatSchema = {
   }),
 };
 
+const dateRangeSchema = z.object({
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+}).optional();
+
 const insightsSchema = {
   body: z.object({
-    analytics: z.any(),
-    period: z.string().optional(),
+    filters: z.object({
+      dateRange: dateRangeSchema,
+    }).optional(),
   }),
 };
 

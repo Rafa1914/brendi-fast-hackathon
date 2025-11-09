@@ -151,6 +151,11 @@
       </div>
 
 
+      <!-- Insights do Período -->
+      <div class="dashboard__insights-section">
+        <InsightsCard :auto-generate="true" />
+      </div>
+
       <!-- Tempos de Preparação e Clientes Fiéis -->
       <div class="dashboard__content-row dashboard__content-row--split">
         <BaseCard>
@@ -267,9 +272,6 @@
           </div>
         </template>
       </BaseTabs>
-
-      <!-- Botão Flutuante de Insights -->
-      <InsightsFloatingButton />
     </div>
   </AppLayout>
 </template>
@@ -310,7 +312,7 @@ import BaseBarChart from '@/components/design-system/BaseBarChart.vue'
 import BaseSkeleton from '@/components/design-system/BaseSkeleton.vue'
 import PeriodIndicator from '@/components/analytics/PeriodIndicator.vue'
 import DateFilters from '@/components/filters/DateFilters.vue'
-import InsightsFloatingButton from '@/components/agent/InsightsFloatingButton.vue'
+import InsightsCard from '@/components/agent/InsightsCard.vue'
 import { formatCurrency, formatTime } from '@/utils/format'
 import { useOrdersByDayChart } from '@/composables/useOrdersByDayChart'
 import { useOrdersByWeekChart } from '@/composables/useOrdersByWeekChart'
@@ -654,6 +656,10 @@ onMounted(async () => {
 .dashboard__insights-wrapper {
   display: flex;
   flex-direction: column;
+}
+
+.dashboard__insights-section {
+  width: 100%;
 }
 
 .dashboard__section-title {

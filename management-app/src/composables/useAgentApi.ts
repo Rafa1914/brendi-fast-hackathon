@@ -1,6 +1,7 @@
 import { useApi } from './useApi'
 import type { ChatMessage, ChatResponse, InsightsResponse } from '@/types/agent'
 import type { AnalyticsResponse } from '@/types/analytics'
+import type { AnalyticsFilters } from '@/types/analytics'
 
 const API_BASE_URL = '/agent-api'
 
@@ -26,7 +27,7 @@ export function useAgentApi() {
     )
   }
 
-  const generateInsights = (analytics: AnalyticsResponse, period?: string) => {
+  const generateInsights = (filters?: AnalyticsFilters) => {
     return useApi<InsightsResponse>(
       async () => {
         const response = await fetch(`${API_BASE_URL}/agent/insights`, {
@@ -34,7 +35,7 @@ export function useAgentApi() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ analytics, period }),
+          body: JSON.stringify({ filters }),
         })
         
         if (!response.ok) {

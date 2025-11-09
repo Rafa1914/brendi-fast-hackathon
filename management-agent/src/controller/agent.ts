@@ -38,11 +38,24 @@ async function generateInsights(req: Request, res: Response) {
   }
   
   try {
+    // Converte strings de data para Date objects
+    const filters = parsedBody.data.filters ? {
+      dateRange: parsedBody.data.filters.dateRange ? {
+        startDate: parsedBody.data.filters.dateRange.startDate 
+          ? new Date(parsedBody.data.filters.dateRange.startDate) 
+          : undefined,
+        endDate: parsedBody.data.filters.dateRange.endDate 
+          ? new Date(parsedBody.data.filters.dateRange.endDate) 
+          : undefined,
+      } : undefined,
+    } : undefined;
+
     logger.debug('Iniciando geração de insights', {
       context: 'AgentController',
-      metadata: { period: parsedBody.data.period },
+      metadata: { filters },
     });
-    const response = await AgentService.generateInsights(parsedBody.data);
+    
+    const response = await AgentService.generateInsights({ filters });
     logger.info('Insights gerados com sucesso', { context: 'AgentController' });
     return res.json(response);
   } catch (error) {

@@ -29,8 +29,24 @@ export function useOrderApi() {
     )
   }
 
+  const getOrderById = (orderId: string) => {
+    return useApi<Order | null>(
+      async () => {
+        const url = `${API_BASE_URL}/order`
+        const response = await fetch(url)
+        if (!response.ok) {
+          throw new Error(`Erro ao buscar pedido: ${response.statusText}`)
+        }
+        const orders: Order[] = await response.json()
+        return orders.find(order => order.id === orderId) || null
+      },
+      { immediate: false }
+    )
+  }
+
   return {
-    listOrders
+    listOrders,
+    getOrderById
   }
 }
 

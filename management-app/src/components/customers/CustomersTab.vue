@@ -144,6 +144,7 @@
             v-for="feedback in feedbackStore.analytics.recentFeedbacks"
             :key="feedback.id"
             class="customers-tab__feedback-item"
+            @click="openOrderModal(feedback.orderId)"
           >
             <div class="customers-tab__feedback-header">
               <div class="customers-tab__feedback-rating">
@@ -165,20 +166,178 @@
         </div>
       </BaseCard>
     </div>
+
+    <!-- Modal de Detalhes do Pedido -->
+    <BaseModal
+      v-model="isOrderModalOpen"
+      title="Detalhes do Pedido"
+    >
+      <div v-if="orderLoading" class="customers-tab__modal-loading">
+        <BaseSkeleton width="100%" height="2rem" style="margin-bottom: 1rem;" />
+        <BaseSkeleton width="80%" height="1.5rem" style="margin-bottom: 1rem;" />
+        <BaseSkeleton width="100%" height="1.5rem" style="margin-bottom: 0.5rem;" />
+        <BaseSkeleton width="100%" height="1.5rem" style="margin-bottom: 0.5rem;" />
+        <BaseSkeleton width="100%" height="1.5rem" />
+      </div>
+      <div v-else-if="orderError" class="customers-tab__modal-error">
+        <p>Erro ao carregar os dados do pedido: {{ orderError }}</p>
+      </div>
+      <div v-else-if="!selectedOrder" class="customers-tab__modal-error">
+        <p>Pedido não encontrado</p>
+      </div>
+      <div v-else class="customers-tab__order-details">
+        <div class="customers-tab__order-section">
+          <h3 class="customers-tab__order-section-title">Informações do Pedido</h3>
+          <div class="customers-tab__order-info">
+            <div class="customers-tab__order-info-item">
+              <span class="customers-tab__order-info-label">ID:</span>
+              <span class="customers-tab__order-info-value">{{ selectedOrder.id }}</span>
+            </div>
+            <div class="customers-tab__order-info-item">
+              <span class="customers-tab__order-info-label">Tipo:</span>
+              <span class="customers-tab__order-info-value">{{ formatOrderType(selectedOrder.type) }}</span>
+            </div>
+            <div class="customers-tab__order-info-item">
+              <span class="customers-tab__order-info-label">Data:</span>
+              <span class="customers-tab__order-info-value">{{ formatDateTime(selectedOrder.createdAt) }}</span>
+            </div>
+            <div class="customers-tab__order-info-item">
+              <span class="customers-tab__order-info-label">Total:</span>
+              <span class="customers-tab__order-info-value customers-tab__order-info-value--price">
+                {{ formatCurrency(selectedOrder.totalPrice) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="customers-tab__order-section">
+          <h3 class="customers-tab__order-section-title">Cliente</h3>
+          <div class="customers-tab__order-info">
+            <div class="customers-tab__order-info-item">
+              <span class="customers-tab__order-info-label">Nome:</span>
+              <span class="customers-tab__order-info-value">{{ selectedOrder.customer.name }}</span>
+            </div>
+            <div class="customers-tab__order-info-item">
+              <span class="customers-tab__order-info-label">Telefone:</span>
+              <span class="customers-tab__order-info-value">{{ selectedOrder.customer.phone }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="customers-tab__order-section">
+          <h3 class="customers-tab__order-section-title">Produtos</h3>
+          <div class="customers-tab__order-products">
+            <div
+              v-for="product in selectedOrder.products"
+              :key="product.id"
+              class="customers-tab__order-product"
+            >
+              <div class="customers-tab__order-product-info">
+                <span class="customers-tab__order-product-name">{{ product.name }}</span>
+                <span class="customers-tab__order-product-quantity">Qtd: {{ product.quantity }}</span>
+              </div>
+              <span class="customers-tab__order-product-price">
+                {{ formatCurrency(product.price * product.quantity) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="selectedOrder.elapsedTimes" class="customers-tab__order-section">
+          <h3 class="customers-tab__order-section-title">Tempos</h3>
+          <div class="customers-tab__order-info">
+            <div v-if="selectedOrder.elapsedTimes.timeToConfirm" class="customers-tab__order-info-item">
+              <span class="customers-tab__order-info-label">Até Confirmação:</span>
+              <span class="customers-tab__order-info-value">
+                {{ formatTime(selectedOrder.elapsedTimes.timeToConfirm) }}
+              </span>
+            </div>
+            <div v-if="selectedOrder.elapsedTimes.timeToReady" class="customers-tab__order-info-item">
+              <span class="customers-tab__order-info-label">Até Pronto:</span>
+              <span class="customers-tab__order-info-value">
+                {{ formatTime(selectedOrder.elapsedTimes.timeToReady) }}
+              </span>
+            </div>
+            <div v-if="selectedOrder.elapsedTimes.timeToTransit" class="customers-tab__order-info-item">
+              <span class="customers-tab__order-info-label">Em Trânsito:</span>
+              <span class="customers-tab__order-info-value">
+                {{ formatTime(selectedOrder.elapsedTimes.timeToTransit) }}
+              </span>
+            </div>
+            <div v-if="selectedOrder.elapsedTimes.timeToDelivered" class="customers-tab__order-info-item">
+              <span class="customers-tab__order-info-label">Até Entrega:</span>
+              <span class="customers-tab__order-info-value">
+                {{ formatTime(selectedOrder.elapsedTimes.timeToDelivered) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </BaseModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useFeedbackStore } from '@/stores/feedback'
+import { useOrderApi } from '@/composables/useOrderApi'
 import BaseCard from '@/components/design-system/BaseCard.vue'
 import BaseStatCard from '@/components/design-system/BaseStatCard.vue'
 import BaseSkeleton from '@/components/design-system/BaseSkeleton.vue'
 import BaseBarChart from '@/components/design-system/BaseBarChart.vue'
 import BasePieChart from '@/components/design-system/BasePieChart.vue'
+import BaseModal from '@/components/design-system/BaseModal.vue'
 import type { ChartOptions, ChartData } from 'chart.js'
+import type { Order } from '@/types/order'
+import { OrderType } from '@/types/order'
+import { formatCurrency, formatDateTime, formatTime } from '@/utils/format'
 
 const feedbackStore = useFeedbackStore()
+const { getOrderById } = useOrderApi()
+
+const isOrderModalOpen = ref(false)
+const selectedOrderId = ref<string | null>(null)
+const selectedOrder = ref<Order | null>(null)
+const orderLoading = ref(false)
+const orderError = ref<string | null>(null)
+
+const openOrderModal = async (orderId: string) => {
+  selectedOrderId.value = orderId
+  selectedOrder.value = null
+  orderError.value = null
+  isOrderModalOpen.value = true
+}
+
+watch(isOrderModalOpen, async (isOpen) => {
+  if (isOpen && selectedOrderId.value) {
+    orderLoading.value = true
+    orderError.value = null
+    
+    try {
+      const { data, execute } = getOrderById(selectedOrderId.value)
+      await execute()
+      
+      if (data.value) {
+        selectedOrder.value = data.value
+      } else {
+        orderError.value = 'Pedido não encontrado'
+      }
+    } catch (err) {
+      orderError.value = err instanceof Error ? err.message : 'Erro ao carregar pedido'
+    } finally {
+      orderLoading.value = false
+    }
+  }
+})
+
+const formatOrderType = (type: OrderType): string => {
+  const typeMap: Record<OrderType, string> = {
+    [OrderType.DELIVERY]: 'Entrega',
+    [OrderType.PICKUP]: 'Retirada',
+    [OrderType.OTHER]: 'Outro'
+  }
+  return typeMap[type] || type
+}
 
 const ratingChartData = computed<ChartData<'bar'> | null>(() => {
   if (!feedbackStore.analytics || feedbackStore.analytics.ratingDistribution.length === 0) {
@@ -467,6 +626,11 @@ const formatDate = (dateString: string): string => {
   border-radius: var(--radius-md);
   border-left: 4px solid var(--color-primary);
   transition: background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.customers-tab__feedback-item:hover {
+  background: var(--color-surface);
 }
 
 .customers-tab__feedback-header {
@@ -532,6 +696,109 @@ const formatDate = (dateString: string): string => {
   font-size: 0.75rem;
   color: var(--color-text-light);
   font-family: monospace;
+}
+
+/* Modal Styles */
+.customers-tab__modal-loading,
+.customers-tab__modal-error {
+  padding: 2rem;
+  text-align: center;
+}
+
+.customers-tab__modal-error {
+  color: var(--color-danger);
+}
+
+.customers-tab__order-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.customers-tab__order-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.customers-tab__order-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.customers-tab__order-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.customers-tab__order-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+}
+
+.customers-tab__order-info-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-light);
+}
+
+.customers-tab__order-info-value {
+  font-size: 0.875rem;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.customers-tab__order-info-value--price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.customers-tab__order-products {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.customers-tab__order-product {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+}
+
+.customers-tab__order-product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.customers-tab__order-product-name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.customers-tab__order-product-quantity {
+  font-size: 0.875rem;
+  color: var(--color-text-light);
+}
+
+.customers-tab__order-product-price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-primary);
 }
 </style>
 

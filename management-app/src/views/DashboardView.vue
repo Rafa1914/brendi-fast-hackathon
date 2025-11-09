@@ -1,14 +1,14 @@
 <template>
   <AppLayout>
     <div class="dashboard">
-      <!-- Filtros de Data -->
-      <DateFilters
-        :filters="orderStore.filters"
-        @update:filters="handleFiltersUpdate"
-      />
-
-      <!-- Indicador de Período -->
-      <PeriodIndicator :orders="orderStore.orders" />
+      <!-- Filtros de Data e Período -->
+      <div class="dashboard__filters-row">
+        <DateFilters
+          :filters="orderStore.filters"
+          @update:filters="handleFiltersUpdate"
+        />
+        <PeriodIndicator :orders="orderStore.orders" />
+      </div>
 
       <!-- Estatísticas Principais -->
       <div class="dashboard__stats">
@@ -213,6 +213,14 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+}
+
+.dashboard__filters-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .dashboard__stats {

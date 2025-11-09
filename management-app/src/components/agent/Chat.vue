@@ -1,55 +1,79 @@
 <template>
-  <BaseCard>
-    <div class="chat">
-      <div class="chat__header">
-        <h3 class="chat__title">Assistente de Análise</h3>
-        <BaseButton
-          v-if="messages.length > 0"
-          variant="ghost"
-          size="sm"
-          @click="clearChat"
-        >
-          Limpar
-        </BaseButton>
-      </div>
+  <div class="chat-wrapper">
+    <!-- Botão minimizado -->
+    <button
+      v-if="!isExpanded"
+      class="chat__toggle-button"
+      @click="toggleChat"
+      aria-label="Abrir chat"
+    >
+      <span class="chat__toggle-icon">💬</span>
+      <span v-if="messages.length > 0" class="chat__notification-badge">{{ messages.length }}</span>
+    </button>
 
-      <div class="chat__messages" ref="messagesContainer">
-        <div
-          v-for="(message, index) in messages"
-          :key="index"
-          :class="['chat__message', `chat__message--${message.role}`]"
-        >
-          <div class="chat__message-content">
-            <div class="chat__message-text">{{ message.content }}</div>
+    <!-- Chat expandido -->
+    <BaseCard v-else class="chat__card">
+      <div class="chat">
+        <div class="chat__header">
+          <h3 class="chat__title">Assistente de Análise</h3>
+          <div class="chat__header-actions">
+            <BaseButton
+              v-if="messages.length > 0"
+              variant="ghost"
+              size="sm"
+              @click="clearChat"
+            >
+              Limpar
+            </BaseButton>
+            <BaseButton
+              variant="ghost"
+              size="sm"
+              @click="toggleChat"
+              aria-label="Fechar chat"
+            >
+              ✕
+            </BaseButton>
           </div>
         </div>
-        <div v-if="loading" class="chat__message chat__message--assistant">
-          <div class="chat__message-content">
-            <div class="chat__message-text chat__message-text--loading">
-              Pensando...
+
+        <div class="chat__messages" ref="messagesContainer">
+          <div
+            v-for="(message, index) in messages"
+            :key="index"
+            :class="['chat__message', `chat__message--${message.role}`]"
+          >
+            <div class="chat__message-content">
+              <div class="chat__message-text">{{ message.content }}</div>
+            </div>
+          </div>
+          <div v-if="loading" class="chat__message chat__message--assistant">
+            <div class="chat__message-content">
+              <div class="chat__message-text chat__message-text--loading">
+                Pensando...
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="chat__input">
-        <input
-          v-model="inputMessage"
-          type="text"
-          placeholder="Digite sua pergunta..."
-          class="chat__input-field"
-          :disabled="loading"
-          @keyup.enter="sendMessage"
-        />
-        <BaseButton
-          :disabled="!inputMessage.trim() || loading"
-          @click="sendMessage"
-        >
-          Enviar
-        </BaseButton>
+        <div class="chat__input">
+          <input
+            v-model="inputMessage"
+            type="text"
+            placeholder="Digite sua pergunta..."
+            class="chat__input-field"
+            :disabled="loading"
+            @keyup.enter="sendMessage"
+          />
+          <BaseButton
+            :disabled="!inputMessage.trim() || loading"
+            @click="sendMessage"
+          >
+            Enviar
+          </BaseButton>
+        </div>
       </div>
-    </div>
-  </BaseCard>
+    </BaseCard>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -63,10 +87,15 @@ import type { ChatMessage } from '@/types/agent'
 const analyticsStore = useAnalyticsStore()
 const { chat: chatApi } = useAgentApi()
 
+const isExpanded = ref(false)
 const messages = ref<ChatMessage[]>([])
 const inputMessage = ref('')
 const loading = ref(false)
 const messagesContainer = ref<HTMLElement | null>(null)
+
+const toggleChat = () => {
+  isExpanded.value = !isExpanded.value
+}
 
 const sendMessage = async () => {
   if (!inputMessage.value.trim() || loading.value) return
@@ -126,11 +155,81 @@ watch(messages, () => {
 </script>
 
 <style scoped>
+.chat-wrapper {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 1000;
+}
+
+.chat__toggle-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.chat__toggle-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.chat__toggle-button:active {
+  transform: scale(0.95);
+}
+
+.chat__toggle-icon {
+  font-size: 1.5rem;
+}
+
+.chat__notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.chat__card {
+  width: 400px;
+  max-width: calc(100vw - 3rem);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .chat {
   display: flex;
   flex-direction: column;
   height: 600px;
-  max-height: 80vh;
+  max-height: calc(100vh - 8rem);
 }
 
 .chat__header {
@@ -139,6 +238,12 @@ watch(messages, () => {
   align-items: center;
   padding: 1rem;
   border-bottom: 1px solid var(--color-border);
+}
+
+.chat__header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 .chat__title {

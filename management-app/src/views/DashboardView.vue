@@ -126,10 +126,8 @@
         </BaseCard>
       </div>
 
-      <!-- Chat com Agent -->
-      <div class="dashboard__chat">
-        <Chat />
-      </div>
+      <!-- Chat com Agent (flutuante) -->
+      <Chat />
     </div>
   </AppLayout>
 </template>
@@ -233,10 +231,6 @@ onMounted(async () => {
 }
 
 .dashboard__insights {
-  margin-top: 2rem;
-}
-
-.dashboard__chat {
   margin-top: 2rem;
 }
 

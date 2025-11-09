@@ -29,6 +29,7 @@ async function chat(req: Request, res: Response) {
 
 async function generateInsights(req: Request, res: Response) {
   const parsedBody = AgentValidator.insightsSchema.body.safeParse(req.body);
+  
   if (!parsedBody.success) {
     logger.warn('Validação falhou ao gerar insights', {
       context: 'AgentController',
@@ -38,24 +39,12 @@ async function generateInsights(req: Request, res: Response) {
   }
   
   try {
-    // Converte strings de data para Date objects
-    const filters = parsedBody.data.filters ? {
-      dateRange: parsedBody.data.filters.dateRange ? {
-        startDate: parsedBody.data.filters.dateRange.startDate 
-          ? new Date(parsedBody.data.filters.dateRange.startDate) 
-          : undefined,
-        endDate: parsedBody.data.filters.dateRange.endDate 
-          ? new Date(parsedBody.data.filters.dateRange.endDate) 
-          : undefined,
-      } : undefined,
-    } : undefined;
-
-    logger.debug('Iniciando geração de insights', {
+    logger.info('Iniciando geração de insights', {
       context: 'AgentController',
-      metadata: { filters },
+      metadata: { filters: parsedBody.data.filters },
     });
     
-    const response = await AgentService.generateInsights({ filters });
+    const response = await AgentService.generateInsights({ filters: parsedBody.data.filters });
     logger.info('Insights gerados com sucesso', { context: 'AgentController' });
     return res.json(response);
   } catch (error) {

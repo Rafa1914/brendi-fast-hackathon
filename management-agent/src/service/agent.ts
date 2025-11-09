@@ -1,5 +1,5 @@
 import { chat as deliveryConsultantChat } from '../ai/agents/DeliveryConsultantAgent';
-import { generateInsights as insightsSummarizerGenerateInsights } from '../ai/agents/InsightsSummarizerAgent';
+import { generateInsights as insightsSummarizerGenerateInsights } from '../ai/agents/InsightsSummarizerAgent/InsightsSummarizerAgent';
 import managementApiClient from '../client/managementApiClient';
 import { ChatRequest, ChatResponse, InsightsRequest, InsightsResponse } from '../types/agent';
 import { logger } from '../utils/logger';
@@ -49,15 +49,16 @@ async function generateInsights(request: InsightsRequest): Promise<InsightsRespo
 
     const [analytics, feedbackAnalytics] = await Promise.all([
       managementApiClient.getAnalytics(filters),
-      managementApiClient.getFeedbackAnalytics(filters).catch((error) => {
-        // Se não conseguir buscar feedbacks, continua sem eles
-        logger.warn('Não foi possível buscar feedback analytics', {
-          context: 'AgentService',
-          metadata: { error: error instanceof Error ? error.message : 'Erro desconhecido' },
-        });
-        return undefined;
-      }),
-    ]);
+      managementApiClient.getFeedbackAnalytics(filters)
+    ]).catch((error) => {
+      // Se não conseguir buscar analytics ou feedbacks, continua onde possível
+      logger.warn('Não foi possível buscar analytics ou feedback analytics', {
+        context: 'AgentService',
+        metadata: { error: error instanceof Error ? error.message : 'Erro desconhecido' },
+      });
+      // Tenta retornar pelo menos analytics se possível, feedbackAnalytics como undefined
+      throw error;
+    });
 
     // Formata o período para o prompt
     const period = analytics.periodInfo

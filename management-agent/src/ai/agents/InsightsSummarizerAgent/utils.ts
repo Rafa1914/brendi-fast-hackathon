@@ -1,9 +1,7 @@
-import { generateText } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
-import { AnalyticsResponse } from '../../types/analytics';
-import { FeedbackAnalyticsResponse } from '../../types/feedback';
+import { AnalyticsResponse } from "../../../types/analytics";
+import { FeedbackAnalyticsResponse } from "../../../types/feedback";
 
-const SYSTEM_PROMPT = `Você é um analista especializado em e-commerce e delivery. 
+export const SYSTEM_PROMPT = `Você é um analista especializado em e-commerce e delivery. 
 Sua função é analisar dados de vendas e feedbacks para gerar insights CONCISOS e acionáveis.
 
 IMPORTANTE: Retorne APENAS JSON válido e bem formatado neste formato:
@@ -113,117 +111,88 @@ ${neighborhoodDistribution.slice(0, 5).map(n =>
 
 // Função pura para formatar feedback analytics
 const formatFeedbackAnalyticsForPrompt = (feedbackAnalytics: FeedbackAnalyticsResponse): string => {
-  const {
-    stats,
-    ratingDistribution,
-    categoryDistribution,
-    topCustomers,
-    periodInfo
-  } = feedbackAnalytics;
-
-  const positivePercentage = stats.totalFeedbacks > 0 
-    ? ((stats.positiveFeedbacks / stats.totalFeedbacks) * 100).toFixed(1) 
-    : '0';
+    const {
+      stats,
+      ratingDistribution,
+      categoryDistribution,
+      topCustomers,
+      periodInfo
+    } = feedbackAnalytics;
   
-  const negativePercentage = stats.totalFeedbacks > 0 
-    ? ((stats.negativeFeedbacks / stats.totalFeedbacks) * 100).toFixed(1) 
-    : '0';
+    const positivePercentage = stats.totalFeedbacks > 0 
+      ? ((stats.positiveFeedbacks / stats.totalFeedbacks) * 100).toFixed(1) 
+      : '0';
+    
+    const negativePercentage = stats.totalFeedbacks > 0 
+      ? ((stats.negativeFeedbacks / stats.totalFeedbacks) * 100).toFixed(1) 
+      : '0';
+    
+    const neutralPercentage = stats.totalFeedbacks > 0 
+      ? ((stats.neutralFeedbacks / stats.totalFeedbacks) * 100).toFixed(1) 
+      : '0';
   
-  const neutralPercentage = stats.totalFeedbacks > 0 
-    ? ((stats.neutralFeedbacks / stats.totalFeedbacks) * 100).toFixed(1) 
-    : '0';
+    return `
+  DADOS DE FEEDBACKS E SATISFAÇÃO:
+  
+  Período: ${new Date(periodInfo.startDate).toLocaleDateString('pt-BR')} até ${new Date(periodInfo.endDate).toLocaleDateString('pt-BR')}
+  Total de Feedbacks: ${periodInfo.totalFeedbacks}
+  
+  Estatísticas:
+  - Total de Feedbacks: ${stats.totalFeedbacks}
+  - Avaliação Média: ${stats.averageRating.toFixed(2)}/5
+  - Feedbacks Positivos (≥4): ${stats.positiveFeedbacks} (${positivePercentage}%)
+  - Feedbacks Negativos (≤2): ${stats.negativeFeedbacks} (${negativePercentage}%)
+  - Feedbacks Neutros (=3): ${stats.neutralFeedbacks} (${neutralPercentage}%)
+  
+  Distribuição por Avaliação:
+  ${ratingDistribution.map(r => 
+    `- ${r.rating} estrelas: ${r.count} feedbacks (${r.percentage.toFixed(1)}%)`
+  ).join('\n')}
+  
+  Distribuição por Categoria:
+  ${categoryDistribution.map(c => 
+    `- ${c.categoryLabel}: ${c.count} feedbacks (${c.percentage.toFixed(1)}%)`
+  ).join('\n')}
+  
+  Top 10 Clientes que Mais Avaliam:
+  ${topCustomers.slice(0, 10).map((c, i) => 
+    `${i + 1}. ${c.customerName} (${c.customerPhone}): ${c.totalFeedbacks} feedbacks, ${c.averageRating.toFixed(2)}/5 média, ${c.totalOrders} pedidos`
+  ).join('\n')}
+    `.trim();
+  };
+  
+  // Função pura para construir o prompt do usuário
+  const buildUserPrompt = (
+    period: string | undefined,
+    analyticsContext: string,
+    feedbackContext: string
+  ): string => {
+    const periodContext = period ? `Período de análise: ${period}\n\n` : '';
+    const feedbackSection = feedbackContext 
+      ? `\nDADOS DE FEEDBACKS E SATISFAÇÃO:\n${feedbackContext}` 
+      : '';
+  
+    return `${periodContext}Analise os dados fornecidos e gere insights CONCISOS.
+  
+  DADOS DE VENDAS E PEDIDOS:
+  ${analyticsContext}
+  ${feedbackSection}
+  
+  Inclua:
+  1. Resumo (summary): 1-2 frases sobre o desempenho geral
+  2. 3 destaques principais (highlights) - pontos mais importantes
+  3. 2-3 recomendações (recommendations) - ações sugeridas
+  4. 2 seções curtas (sections) sobre:
+     - Tendências principais observadas
+     - Oportunidades de melhoria
+  
+  SEJA CONCISO. Retorne APENAS JSON válido.`;
+  };
 
-  return `
-DADOS DE FEEDBACKS E SATISFAÇÃO:
-
-Período: ${new Date(periodInfo.startDate).toLocaleDateString('pt-BR')} até ${new Date(periodInfo.endDate).toLocaleDateString('pt-BR')}
-Total de Feedbacks: ${periodInfo.totalFeedbacks}
-
-Estatísticas:
-- Total de Feedbacks: ${stats.totalFeedbacks}
-- Avaliação Média: ${stats.averageRating.toFixed(2)}/5
-- Feedbacks Positivos (≥4): ${stats.positiveFeedbacks} (${positivePercentage}%)
-- Feedbacks Negativos (≤2): ${stats.negativeFeedbacks} (${negativePercentage}%)
-- Feedbacks Neutros (=3): ${stats.neutralFeedbacks} (${neutralPercentage}%)
-
-Distribuição por Avaliação:
-${ratingDistribution.map(r => 
-  `- ${r.rating} estrelas: ${r.count} feedbacks (${r.percentage.toFixed(1)}%)`
-).join('\n')}
-
-Distribuição por Categoria:
-${categoryDistribution.map(c => 
-  `- ${c.categoryLabel}: ${c.count} feedbacks (${c.percentage.toFixed(1)}%)`
-).join('\n')}
-
-Top 10 Clientes que Mais Avaliam:
-${topCustomers.slice(0, 10).map((c, i) => 
-  `${i + 1}. ${c.customerName} (${c.customerPhone}): ${c.totalFeedbacks} feedbacks, ${c.averageRating.toFixed(2)}/5 média, ${c.totalOrders} pedidos`
-).join('\n')}
-  `.trim();
+const InsightsSummarizerUtils = {
+  formatAnalyticsForPrompt,
+  formatFeedbackAnalyticsForPrompt,
+  buildUserPrompt,
 };
 
-// Função pura para construir o prompt do usuário
-const buildUserPrompt = (
-  period: string | undefined,
-  analyticsContext: string,
-  feedbackContext: string
-): string => {
-  const periodContext = period ? `Período de análise: ${period}\n\n` : '';
-  const feedbackSection = feedbackContext 
-    ? `\nDADOS DE FEEDBACKS E SATISFAÇÃO:\n${feedbackContext}` 
-    : '';
-
-  return `${periodContext}Analise os dados fornecidos e gere insights CONCISOS.
-
-DADOS DE VENDAS E PEDIDOS:
-${analyticsContext}
-${feedbackSection}
-
-Inclua:
-1. Resumo (summary): 1-2 frases sobre o desempenho geral
-2. 3 destaques principais (highlights) - pontos mais importantes
-3. 2-3 recomendações (recommendations) - ações sugeridas
-4. 2 seções curtas (sections) sobre:
-   - Tendências principais observadas
-   - Oportunidades de melhoria
-
-SEJA CONCISO. Retorne APENAS JSON válido.`;
-};
-
-// Factory function para criar o modelo OpenAI
-const createModel = () => {
-  const openai = createOpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
-  const modelName = process.env.OPENAI_MODEL_INSIGHTS || 'gpt-4o-mini';
-  return openai(modelName);
-};
-
-// Função principal para gerar insights
-export const generateInsights = async (
-  analytics: AnalyticsResponse,
-  feedbackAnalytics?: FeedbackAnalyticsResponse,
-  period?: string
-): Promise<string> => {
-  const model = createModel();
-  const analyticsContext = formatAnalyticsForPrompt(analytics);
-  const feedbackContext = feedbackAnalytics 
-    ? formatFeedbackAnalyticsForPrompt(feedbackAnalytics)
-    : '';
-  const userPrompt = buildUserPrompt(period, analyticsContext, feedbackContext);
-
-  const result = await generateText({
-    model,
-    system: SYSTEM_PROMPT,
-    prompt: userPrompt,
-  });
-
-  return result.text;
-};
-
-// Exporta as funções
-export default {
-  generateInsights,
-};
+export default InsightsSummarizerUtils;

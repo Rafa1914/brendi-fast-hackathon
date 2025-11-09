@@ -13,8 +13,8 @@ const chatSchema = {
 };
 
 const dateRangeSchema = z.object({
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
+  startDate: z.string().optional().transform((val) => val ? new Date(val) : undefined),
+  endDate: z.string().optional().transform((val) => val ? new Date(val) : undefined),
 }).optional();
 
 const insightsSchema = {

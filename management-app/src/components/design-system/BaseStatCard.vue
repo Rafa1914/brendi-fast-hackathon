@@ -33,7 +33,7 @@ const props = defineProps<{
   icon?: string
   variant?: 'primary' | 'success' | 'warning' | 'danger'
   trend?: Trend
-  format?: 'currency' | 'number' | 'percentage'
+  format?: 'currency' | 'number' | 'percentage' | 'decimal'
 }>()
 
 const formattedValue = computed(() => {
@@ -45,6 +45,10 @@ const formattedValue = computed(() => {
   
   if (props.format === 'percentage') {
     return formatPercentage(props.value)
+  }
+  
+  if (props.format === 'decimal') {
+    return props.value.toFixed(1)
   }
   
   return formatNumber(props.value)

@@ -6,13 +6,23 @@
         <DateFilters
           :filters="analyticsStore.filters"
           @update:filters="handleFiltersUpdate"
-          :disabled="analyticsStore.loading"
+          :disabled="analyticsStore.loading || feedbackStore.loading"
         />
         <PeriodIndicator
           v-if="analyticsStore.analytics && !analyticsStore.loading"
           :period-info="analyticsStore.analytics.periodInfo"
         />
       </div>
+
+      <!-- Abas -->
+      <BaseTabs
+        :tabs="tabs"
+        :activeTab="activeTab"
+        @update:activeTab="activeTab = $event"
+      >
+        <template #default="{ activeTab: currentTab }">
+          <!-- Aba Dashboard -->
+          <div v-if="currentTab === 'dashboard'" class="dashboard__tab-content">
 
       <!-- Estatísticas Principais -->
       <div class="dashboard__stats">
@@ -249,6 +259,15 @@
         </BaseCard>
       </div>
 
+          </div>
+
+          <!-- Aba Clientes -->
+          <div v-if="currentTab === 'customers'" class="dashboard__tab-content">
+            <CustomersTab />
+          </div>
+        </template>
+      </BaseTabs>
+
       <!-- Botão Flutuante de Insights -->
       <InsightsFloatingButton />
     </div>
@@ -256,12 +275,15 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed, ref } from 'vue'
+import { onMounted, computed, ref, watch } from 'vue'
 import { useAnalyticsStore } from '@/stores/analytics'
 import { useStoreStore } from '@/stores/store'
+import { useFeedbackStore } from '@/stores/feedback'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import BaseCard from '@/components/design-system/BaseCard.vue'
 import BaseStatCard from '@/components/design-system/BaseStatCard.vue'
+import BaseTabs from '@/components/layout/BaseTabs.vue'
+import CustomersTab from '@/components/customers/CustomersTab.vue'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -300,6 +322,14 @@ import type { ChartOptions, ChartData } from 'chart.js'
 
 const analyticsStore = useAnalyticsStore()
 const storeStore = useStoreStore()
+const feedbackStore = useFeedbackStore()
+
+const activeTab = ref('dashboard')
+
+const tabs = [
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'customers', label: 'Clientes' }
+]
 
 const chartView = ref<'day' | 'week'>('day')
 
@@ -425,7 +455,23 @@ const neighborhoodChartOptions: ChartOptions<'bar'> = {
 
 const handleFiltersUpdate = async (filters: AnalyticsFilters) => {
   await analyticsStore.fetchAnalytics(filters)
+  // Atualizar feedbacks quando os filtros mudarem
+  if (filters.dateRange) {
+    await feedbackStore.fetchFeedbackAnalytics({
+      dateRange: {
+        startDate: filters.dateRange.startDate,
+        endDate: filters.dateRange.endDate
+      }
+    })
+  }
 }
+
+// Observar mudanças na aba para carregar feedbacks quando necessário
+watch(activeTab, async (newTab) => {
+  if (newTab === 'customers' && !feedbackStore.analytics) {
+    await feedbackStore.fetchFeedbackAnalytics(analyticsStore.filters)
+  }
+})
 
 onMounted(async () => {
   await analyticsStore.fetchAnalytics()
@@ -844,5 +890,11 @@ onMounted(async () => {
 .dashboard__preparation-time-value--total {
   font-size: 1.25rem;
   color: var(--color-primary);
+}
+
+.dashboard__tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 </style>

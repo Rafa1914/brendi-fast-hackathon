@@ -45,8 +45,15 @@
 
       <!-- Gráficos -->
       <div class="dashboard__charts">
-        <OrdersByDayChart :orders="orderStore.orders" />
-        <OrdersByWeekChart :orders="orderStore.orders" />
+        <BaseLineChart
+          title="Pedidos por Dia"
+          :data="ordersByDayData"
+          :options="lineChartOptions"
+        />
+        <BaseBarChart
+          title="Pedidos por Semana"
+          :data="ordersByWeekData"
+        />
       </div>
 
       <!-- Análise de Produtos -->
@@ -116,16 +123,48 @@ import { useStoreStore } from '@/stores/store'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import BaseCard from '@/components/design-system/BaseCard.vue'
 import BaseStatCard from '@/components/design-system/BaseStatCard.vue'
+import BaseBarChart from '@/components/design-system/BaseBarChart.vue'
+import BaseLineChart from '@/components/design-system/BaseLineChart.vue'
 import OrderList from '@/components/orders/OrderList.vue'
-import OrdersByDayChart from '@/components/charts/OrdersByDayChart.vue'
-import OrdersByWeekChart from '@/components/charts/OrdersByWeekChart.vue'
 import PeriodIndicator from '@/components/analytics/PeriodIndicator.vue'
 import DateFilters from '@/components/filters/DateFilters.vue'
 import { formatCurrency } from '@/utils/format'
+import { useOrdersByDay } from '@/composables/useOrdersByDay'
+import { useOrdersByWeek } from '@/composables/useOrdersByWeek'
 import type { OrderFilters } from '@/types/order'
+import type { ChartOptions } from 'chart.js'
 
 const orderStore = useOrderStore()
 const storeStore = useStoreStore()
+
+const { chartData: ordersByDayData } = useOrdersByDay(computed(() => orderStore.orders))
+const { chartData: ordersByWeekData } = useOrdersByWeek(computed(() => orderStore.orders))
+
+const lineChartOptions: ChartOptions<'line'> = {
+  scales: {
+    y: {
+      type: 'linear',
+      display: true,
+      position: 'left',
+      title: {
+        display: true,
+        text: 'Quantidade de Pedidos'
+      }
+    },
+    y1: {
+      type: 'linear',
+      display: true,
+      position: 'right',
+      title: {
+        display: true,
+        text: 'Receita (R$)'
+      },
+      grid: {
+        drawOnChartArea: false
+      }
+    }
+  }
+}
 
 const recentOrders = computed(() => {
   return orderStore.orders

@@ -328,7 +328,7 @@ function calculatePreparationTimeStats(orders: Order[]): PreparationTimeStats | 
   let totalTimeToDelivered = 0;
 
   ordersWithTimes.forEach((order) => {
-    if (order.elapsedTimes) {
+    if (order.elapsedTimes && order.elapsedTimes.timeToConfirm && order.elapsedTimes.timeToReady && order.elapsedTimes.timeToTransit && order.elapsedTimes.timeToDelivered) {
       totalTimeToConfirm += order.elapsedTimes.timeToConfirm;
       totalTimeToReady += order.elapsedTimes.timeToReady;
       totalTimeToTransit += order.elapsedTimes.timeToTransit;

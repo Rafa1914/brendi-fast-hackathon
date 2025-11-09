@@ -10,28 +10,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { Order } from '@/types/order'
-import { formatDate } from '@/utils/format'
-
 const props = defineProps<{
-  orders: Order[]
+  periodInfo: {
+    startDate: string
+    endDate: string
+    totalOrders: number
+  } | null
 }>()
-
-const periodInfo = computed(() => {
-  if (props.orders.length === 0) return null
-
-  const dates = props.orders
-    .map(order => new Date(order.createdAt))
-    .sort((a, b) => a.getTime() - b.getTime())
-  const startDate = formatDate(dates[0])
-  const endDate = formatDate(dates[dates.length - 1])
-  return {
-    startDate,
-    endDate,
-    totalOrders: props.orders.length
-  }
-})
 </script>
 
 <style scoped>

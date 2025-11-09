@@ -55,14 +55,14 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import BaseButton from '@/components/design-system/BaseButton.vue'
-import type { OrderFilters } from '@/types/order'
+import type { AnalyticsFilters } from '@/types/analytics'
 
 const props = defineProps<{
-  filters?: OrderFilters
+  filters?: AnalyticsFilters
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:filters', filters: OrderFilters): void
+  (e: 'update:filters', filters: AnalyticsFilters): void
 }>()
 
 const selectedPreset = ref<string | null>(null)
@@ -138,7 +138,7 @@ const applyPreset = (preset: Preset) => {
   showCustomRange.value = false
   const { startDate, endDate } = preset.getDates()
   
-  const filters: OrderFilters = {
+  const filters: AnalyticsFilters = {
     dateRange: {
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString()
@@ -157,7 +157,7 @@ const toggleCustomRange = () => {
 
 const applyCustomFilters = () => {
   selectedPreset.value = null
-  const filters: OrderFilters = {}
+  const filters: AnalyticsFilters = {}
   
   if (localStartDate.value || localEndDate.value) {
     filters.dateRange = {}

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import type { Order, OrderFilters } from '@/types/order'
 import { useOrderApi } from '@/composables/useOrderApi'
 
@@ -8,17 +8,6 @@ export const useOrderStore = defineStore('order', () => {
   const loading = ref(false)
   const error = ref<Error | null>(null)
   const filters = ref<OrderFilters>({})
-
-  const totalRevenue = computed(() => {
-    return orders.value.reduce((sum, order) => sum + order.totalPrice, 0)
-  })
-
-  const totalOrders = computed(() => orders.value.length)
-
-  const averageOrderValue = computed(() => {
-    if (orders.value.length === 0) return 0
-    return totalRevenue.value / orders.value.length
-  })
 
   const fetchOrders = async (newFilters?: OrderFilters) => {
     loading.value = true
@@ -48,9 +37,6 @@ export const useOrderStore = defineStore('order', () => {
     loading,
     error,
     filters,
-    totalRevenue,
-    totalOrders,
-    averageOrderValue,
     fetchOrders
   }
 })

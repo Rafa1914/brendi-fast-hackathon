@@ -4,17 +4,21 @@
       <!-- Filtros de Data e Período -->
       <div class="dashboard__filters-row">
         <DateFilters
-          :filters="orderStore.filters"
+          :filters="analyticsStore.filters"
           @update:filters="handleFiltersUpdate"
         />
-        <PeriodIndicator :orders="orderStore.orders" />
+        <PeriodIndicator
+          v-if="analyticsStore.analytics"
+          :period-info="analyticsStore.analytics.periodInfo"
+        />
       </div>
 
       <!-- Estatísticas Principais -->
       <div class="dashboard__stats">
         <BaseStatCard
+          v-if="analyticsStore.analytics"
           title="Receita Total"
-          :value="orderStore.totalRevenue"
+          :value="analyticsStore.analytics.stats.totalRevenue / 100"
           format="currency"
           variant="primary"
           icon="💰"
@@ -23,8 +27,9 @@
         </BaseStatCard>
 
         <BaseStatCard
+          v-if="analyticsStore.analytics"
           title="Total de Pedidos"
-          :value="orderStore.totalOrders"
+          :value="analyticsStore.analytics.stats.totalOrders"
           format="number"
           variant="success"
           icon="🛒"
@@ -33,8 +38,9 @@
         </BaseStatCard>
 
         <BaseStatCard
+          v-if="analyticsStore.analytics"
           title="Ticket Médio"
-          :value="orderStore.averageOrderValue"
+          :value="analyticsStore.analytics.stats.averageOrderValue / 100"
           format="currency"
           variant="warning"
           icon="📊"
@@ -46,13 +52,15 @@
       <!-- Gráficos -->
       <div class="dashboard__charts">
         <BaseLineChart
+          v-if="ordersByDayChartData"
           title="Pedidos por Dia"
-          :data="ordersByDayData"
+          :data="ordersByDayChartData"
           :options="lineChartOptions"
         />
         <BaseBarChart
+          v-if="ordersByWeekChartData"
           title="Pedidos por Semana"
-          :data="ordersByWeekData"
+          :data="ordersByWeekChartData"
         />
       </div>
 
@@ -60,12 +68,12 @@
       <div class="dashboard__content">
         <BaseCard>
           <h3 class="dashboard__section-title">Top Produtos</h3>
-          <div v-if="productAnalysis.length === 0" class="dashboard__empty">
+          <div v-if="!analyticsStore.analytics || analyticsStore.analytics.topProducts.length === 0" class="dashboard__empty">
             <p>Nenhum dado disponível para análise</p>
           </div>
           <div v-else class="dashboard__products">
             <div
-              v-for="product in productAnalysis"
+              v-for="product in analyticsStore.analytics.topProducts"
               :key="product.id"
               class="dashboard__product-item"
             >
@@ -85,7 +93,7 @@
           <h3 class="dashboard__section-title">Distribuição por Período</h3>
           <div class="dashboard__periods">
             <div
-              v-for="period in periodDistribution"
+              v-for="period in analyticsStore.analytics?.periodDistribution || []"
               :key="period.label"
               class="dashboard__period-item"
             >
@@ -106,9 +114,9 @@
         <BaseCard>
           <h3 class="dashboard__section-title">Pedidos Recentes</h3>
           <OrderList
-            :orders="recentOrders"
-            :loading="orderStore.loading"
-            :error="orderStore.error"
+            :orders="analyticsStore.analytics?.recentOrders || []"
+            :loading="analyticsStore.loading"
+            :error="analyticsStore.error"
           />
         </BaseCard>
       </div>
@@ -118,7 +126,7 @@
 
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
-import { useOrderStore } from '@/stores/order'
+import { useAnalyticsStore } from '@/stores/analytics'
 import { useStoreStore } from '@/stores/store'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import BaseCard from '@/components/design-system/BaseCard.vue'
@@ -129,16 +137,19 @@ import OrderList from '@/components/orders/OrderList.vue'
 import PeriodIndicator from '@/components/analytics/PeriodIndicator.vue'
 import DateFilters from '@/components/filters/DateFilters.vue'
 import { formatCurrency } from '@/utils/format'
-import { useOrdersByDay } from '@/composables/useOrdersByDay'
-import { useOrdersByWeek } from '@/composables/useOrdersByWeek'
-import type { OrderFilters } from '@/types/order'
+import { useOrdersByDayChart } from '@/composables/useOrdersByDayChart'
+import { useOrdersByWeekChart } from '@/composables/useOrdersByWeekChart'
+import type { AnalyticsFilters } from '@/types/analytics'
 import type { ChartOptions } from 'chart.js'
 
-const orderStore = useOrderStore()
+const analyticsStore = useAnalyticsStore()
 const storeStore = useStoreStore()
 
-const { chartData: ordersByDayData } = useOrdersByDay(computed(() => orderStore.orders))
-const { chartData: ordersByWeekData } = useOrdersByWeek(computed(() => orderStore.orders))
+const ordersByDay = computed(() => analyticsStore.analytics?.ordersByDay || [])
+const ordersByWeek = computed(() => analyticsStore.analytics?.ordersByWeek || [])
+
+const { chartData: ordersByDayChartData } = useOrdersByDayChart(ordersByDay)
+const { chartData: ordersByWeekChartData } = useOrdersByWeekChart(ordersByWeek)
 
 const lineChartOptions: ChartOptions<'line'> = {
   scales: {
@@ -166,74 +177,12 @@ const lineChartOptions: ChartOptions<'line'> = {
   }
 }
 
-const recentOrders = computed(() => {
-  return orderStore.orders
-    .slice()
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 6)
-})
-
-const productAnalysis = computed(() => {
-  const productMap = new Map<string, { id: string; name: string; totalQuantity: number; totalRevenue: number }>()
-  
-  orderStore.orders.forEach(order => {
-    order.products.forEach(product => {
-      const existing = productMap.get(product.id) || {
-        id: product.id,
-        name: product.name,
-        totalQuantity: 0,
-        totalRevenue: 0
-      }
-      
-      existing.totalQuantity += product.quantity
-      existing.totalRevenue += product.price * product.quantity
-      
-      productMap.set(product.id, existing)
-    })
-  })
-  
-  return Array.from(productMap.values())
-    .sort((a, b) => b.totalRevenue - a.totalRevenue)
-    .slice(0, 10)
-})
-
-const periodDistribution = computed(() => {
-  const now = new Date()
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const yesterday = new Date(today)
-  yesterday.setDate(yesterday.getDate() - 1)
-  const lastWeek = new Date(today)
-  lastWeek.setDate(lastWeek.getDate() - 7)
-  const lastMonth = new Date(today)
-  lastMonth.setMonth(lastMonth.getMonth() - 1)
-  
-  const periods = [
-    { label: 'Hoje', start: today, end: new Date(today.getTime() + 24 * 60 * 60 * 1000), count: 0, revenue: 0 },
-    { label: 'Ontem', start: yesterday, end: today, count: 0, revenue: 0 },
-    { label: 'Última Semana', start: lastWeek, end: today, count: 0, revenue: 0 },
-    { label: 'Último Mês', start: lastMonth, end: today, count: 0, revenue: 0 }
-  ]
-  
-  orderStore.orders.forEach(order => {
-    const orderDate = new Date(order.createdAt)
-    
-    periods.forEach(period => {
-      if (orderDate >= period.start && orderDate < period.end) {
-        period.count++
-        period.revenue += order.totalPrice
-      }
-    })
-  })
-  
-  return periods
-})
-
-const handleFiltersUpdate = async (filters: OrderFilters) => {
-  await orderStore.fetchOrders(filters)
+const handleFiltersUpdate = async (filters: AnalyticsFilters) => {
+  await analyticsStore.fetchAnalytics(filters)
 }
 
 onMounted(async () => {
-  await orderStore.fetchOrders()
+  await analyticsStore.fetchAnalytics()
   await storeStore.fetchStore('J9UBYRwCqHDlhyhLeY28')
 })
 </script>

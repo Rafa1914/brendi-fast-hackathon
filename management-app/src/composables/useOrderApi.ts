@@ -9,9 +9,6 @@ export function useOrderApi() {
       async () => {
         const params = new URLSearchParams()
         
-        if (filters?.storeId) {
-          params.append('storeId', filters.storeId)
-        }
         if (filters?.dateRange?.startDate) {
           params.append('startDate', filters.dateRange.startDate)
         }

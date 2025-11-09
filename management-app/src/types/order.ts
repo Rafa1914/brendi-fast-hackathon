@@ -3,7 +3,6 @@ export interface Order {
   totalPrice: number
   products: OrderProduct[]
   createdAt: string
-  storeId?: string
 }
 
 export interface OrderProduct {
@@ -14,7 +13,6 @@ export interface OrderProduct {
 }
 
 export interface OrderFilters {
-  storeId?: string
   dateRange?: {
     startDate?: string
     endDate?: string

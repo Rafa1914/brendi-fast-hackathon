@@ -42,7 +42,7 @@ const formattedValue = computed(() => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
-    }).format(props.value)
+    }).format(props.value/100)
   }
   
   if (props.format === 'percentage') {

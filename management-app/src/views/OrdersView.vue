@@ -29,16 +29,6 @@
                 @change="applyFilters"
               />
             </div>
-            <div class="orders__filter-group">
-              <label class="orders__filter-label">ID da Loja</label>
-              <input
-                v-model="filters.storeId"
-                type="text"
-                placeholder="Ex: 1"
-                class="orders__filter-input"
-                @input="applyFilters"
-              />
-            </div>
           </div>
         </BaseCard>
       </div>
@@ -67,21 +57,17 @@ import AppLayout from '@/components/layout/AppLayout.vue'
 import BaseCard from '@/components/design-system/BaseCard.vue'
 import BaseButton from '@/components/design-system/BaseButton.vue'
 import OrderList from '@/components/orders/OrderList.vue'
+import { OrderFilters } from '@/types/order'
 
 const orderStore = useOrderStore()
 
 const filters = ref({
   startDate: '',
   endDate: '',
-  storeId: ''
 })
 
 const applyFilters = async () => {
-  const orderFilters: any = {}
-  
-  if (filters.value.storeId) {
-    orderFilters.storeId = filters.value.storeId
-  }
+  const orderFilters: OrderFilters = {}
   
   if (filters.value.startDate || filters.value.endDate) {
     orderFilters.dateRange = {}

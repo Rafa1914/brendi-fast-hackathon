@@ -109,6 +109,11 @@
         </BaseCard>
       </div>
 
+      <!-- Insights do Período -->
+      <div class="dashboard__insights">
+        <InsightsCard />
+      </div>
+
       <!-- Pedidos Recentes -->
       <div class="dashboard__content">
         <BaseCard>
@@ -119,6 +124,11 @@
             :error="analyticsStore.error"
           />
         </BaseCard>
+      </div>
+
+      <!-- Chat com Agent -->
+      <div class="dashboard__chat">
+        <Chat />
       </div>
     </div>
   </AppLayout>
@@ -136,6 +146,8 @@ import BaseLineChart from '@/components/design-system/BaseLineChart.vue'
 import OrderList from '@/components/orders/OrderList.vue'
 import PeriodIndicator from '@/components/analytics/PeriodIndicator.vue'
 import DateFilters from '@/components/filters/DateFilters.vue'
+import Chat from '@/components/agent/Chat.vue'
+import InsightsCard from '@/components/agent/InsightsCard.vue'
 import { formatCurrency } from '@/utils/format'
 import { useOrdersByDayChart } from '@/composables/useOrdersByDayChart'
 import { useOrdersByWeekChart } from '@/composables/useOrdersByWeekChart'
@@ -218,6 +230,14 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 1.5rem;
+}
+
+.dashboard__insights {
+  margin-top: 2rem;
+}
+
+.dashboard__chat {
+  margin-top: 2rem;
 }
 
 .dashboard__section-title {

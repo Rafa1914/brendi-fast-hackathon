@@ -29,7 +29,7 @@ export function useNeighborhoodBarChart(neighborhoodDistribution: Ref<Neighborho
       labels: topNeighborhoods.map((item) => item.neighborhood),
       datasets: [
         {
-          label: 'Quantidade de Pedidos Entregues',
+          label: 'Pedidos Entregues',
           data: topNeighborhoods.map((item) => item.count),
           backgroundColor: colors.slice(0, topNeighborhoods.length),
           borderColor: colors.slice(0, topNeighborhoods.length).map((color) => color.replace('0.8', '1').replace('0.6', '1')),

@@ -411,7 +411,7 @@ const neighborhoodChartOptions: ChartOptions<'bar'> = {
       beginAtZero: true,
       title: {
         display: true,
-        text: 'Quantidade de Pedidos Entregues'
+        text: 'Quantidade de Pedidos'
       }
     },
     x: {

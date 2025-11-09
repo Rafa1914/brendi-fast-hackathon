@@ -9,6 +9,9 @@ node_modules/
 dist/
 *.tsbuildinfo
 
+# Real Database
+data/
+
 # Logs
 logs
 *.log

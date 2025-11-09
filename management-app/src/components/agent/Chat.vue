@@ -106,7 +106,6 @@ const sendMessage = async () => {
   }
 
   messages.value.push(userMessage)
-  const currentInput = inputMessage.value
   inputMessage.value = ''
   loading.value = true
 

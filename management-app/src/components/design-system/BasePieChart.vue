@@ -23,7 +23,6 @@ import {
   Legend
 } from 'chart.js'
 import BaseCard from '@/components/design-system/BaseCard.vue'
-import { formatCurrency } from '@/utils/format'
 import type { ChartData, ChartOptions } from 'chart.js'
 
 ChartJS.register(

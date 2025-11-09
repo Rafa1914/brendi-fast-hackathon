@@ -12,7 +12,7 @@ app.use(router)
 
 // Inicializar tema após criar o Pinia
 import { useThemeStore } from './stores/theme'
-const themeStore = useThemeStore()
+useThemeStore()
 // O tema já é aplicado automaticamente no store
 
 app.mount('#app')

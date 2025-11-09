@@ -1,3 +1,5 @@
+import { AnalyticsResponse } from "./analytics";
+
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;

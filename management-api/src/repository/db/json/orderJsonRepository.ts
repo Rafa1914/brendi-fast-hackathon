@@ -2,7 +2,8 @@ import { IOrderRepository } from "../../interface/IOrderRepository";
 import { Order, OrderFilters } from "../../../types/order";
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { adaptOrderFromJson, OrderJson } from "./adapters/order";
+import { adaptOrderFromJson } from "./adapters/order";
+import { OrderJson } from "./types/order";
 import { OrderUtils } from "./utils/order";
 
 

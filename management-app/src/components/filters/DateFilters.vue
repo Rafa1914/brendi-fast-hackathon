@@ -191,6 +191,20 @@ const clearFilters = () => {
   emit('update:filters', {})
 }
 
+// Função auxiliar para normalizar datas para comparação (apenas dia, mês, ano)
+const normalizeDateForComparison = (date: Date): Date => {
+  const normalized = new Date(date)
+  normalized.setHours(0, 0, 0, 0)
+  return normalized
+}
+
+// Função auxiliar para normalizar data de fim (fim do dia)
+const normalizeEndDateForComparison = (date: Date): Date => {
+  const normalized = new Date(date)
+  normalized.setHours(23, 59, 59, 999)
+  return normalized
+}
+
 watch(() => props.filters, (newFilters) => {
   if (!newFilters?.dateRange) {
     selectedPreset.value = null
@@ -204,8 +218,14 @@ watch(() => props.filters, (newFilters) => {
     
     const matchesPreset = presets.find(preset => {
       const presetDates = preset.getDates()
-      return presetDates.startDate.getTime() === startDate.getTime() &&
-             presetDates.endDate.getTime() === endDate.getTime()
+      // Normaliza as datas para comparação (ignora diferenças de milissegundos)
+      const normalizedStartDate = normalizeDateForComparison(startDate)
+      const normalizedEndDate = normalizeEndDateForComparison(endDate)
+      const normalizedPresetStart = normalizeDateForComparison(presetDates.startDate)
+      const normalizedPresetEnd = normalizeEndDateForComparison(presetDates.endDate)
+      
+      return normalizedPresetStart.getTime() === normalizedStartDate.getTime() &&
+             normalizedPresetEnd.getTime() === normalizedEndDate.getTime()
     })
     
     if (matchesPreset) {
@@ -219,7 +239,7 @@ watch(() => props.filters, (newFilters) => {
       localEndDate.value = endDate.toISOString().split('T')[0]
     }
   }
-}, { deep: true })
+}, { deep: true, immediate: true })
 </script>
 
 <style scoped>

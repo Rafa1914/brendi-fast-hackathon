@@ -467,6 +467,22 @@ const handleFiltersUpdate = async (filters: AnalyticsFilters) => {
   }
 }
 
+// Função para obter filtros dos últimos 7 dias
+const getLast7DaysFilters = (): AnalyticsFilters => {
+  const endDate = new Date()
+  endDate.setHours(23, 59, 59, 999)
+  const startDate = new Date(endDate)
+  startDate.setDate(startDate.getDate() - 6)
+  startDate.setHours(0, 0, 0, 0)
+  
+  return {
+    dateRange: {
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString()
+    }
+  }
+}
+
 // Observar mudanças na aba para carregar feedbacks quando necessário
 watch(activeTab, async (newTab) => {
   if (newTab === 'customers' && !feedbackStore.analytics) {
@@ -475,7 +491,9 @@ watch(activeTab, async (newTab) => {
 })
 
 onMounted(async () => {
-  await analyticsStore.fetchAnalytics()
+  // Aplicar filtro padrão dos últimos 7 dias
+  const defaultFilters = getLast7DaysFilters()
+  await analyticsStore.fetchAnalytics(defaultFilters)
   await storeStore.fetchStore('J9UBYRwCqHDlhyhLeY28')
 })
 </script>
